@@ -23,20 +23,19 @@ class UsersResource extends JsonResource
 return UsersResource::collection(Users::all());
  */
         return [
+            'id' => $this->id,
             'name' => $this->name,
             'username' => $this->username,
             'email' => $this->email,
             'cover' => $this->cover,
             'avatar' => $this->avatar,
-            'password' => $this->password,
-            'tweets' => TweetsResource::collection($this->whenLoaded('tweets')),
-            'likes' => PostResource::collection($this->whenLoaded('likes')),
-            'replies' => ReplyResource::collection($this->whenLoaded('replies')),
-            'profile' => new UsersResource($this->whenLoaded('profile')),
-            'followers' => UsersResource::collection($this->whenLoaded('followers')),
-            'following' => UsersResource::collection($this->whenLoaded('following')),
-            'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at
+            //   'tweets' => TweetsResource::collection($this->whenLoaded('tweets')),
+            //   'replies' => ReplyResource::collection($this->whenLoaded('replies')),
+            //   'profile' => new UsersResource($this->whenLoaded('profile')),
+            //  'followers' => UsersResource::collection($this->whenLoaded('followers')),
+            //  'following' => UsersResource::collection($this->whenLoaded('following')),
+            //   'created_at' => $this->created_at,
+            //   'updated_at' => $this->updated_at
         ];
     }
 }

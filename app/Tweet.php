@@ -3,11 +3,11 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use Cog\Contracts\Love\Reacterable\Models\Reacterable as ReacterableContract;
-use Cog\Laravel\Love\Reacterable\Models\Traits\Reacterable;
-class Tweet extends Model implements ReacterableContract
+use Cog\Contracts\Love\Reactable\Models\Reactable as ReactableContract;
+use Cog\Laravel\Love\Reactable\Models\Traits\Reactable;
+class Tweet extends Model implements ReactableContract
 {
-    use Reacterable;
+    use Reactable;
 
     protected $table = 'tweets';
     protected $primaryKey  = 'id';

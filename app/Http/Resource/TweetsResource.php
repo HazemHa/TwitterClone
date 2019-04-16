@@ -24,9 +24,16 @@ return TweetsResource::collection(Tweets::all());
         return [
             'body' => $this->body,
             'user_id' => $this->user_id,
-     //       'user'=>new UsersResource($this->whenLoaded('user')),
-     //       'replies'=>new UsersResource($this->whenLoaded('replies')),
-     //       'likes'=>new UsersResource($this->whenLoaded('likes')),
+            'id' => $this->id,
+            'user' => array(
+                'name' => \App\User::find($this->user_id)->name,
+                'email' => \App\User::find($this->user_id)->email,
+                'avatar' => \App\User::find($this->user_id)->avatar,
+                'cover' => \App\User::find($this->user_id)->cover,
+                'username' => \App\User::find($this->user_id)->username
+            ),
+            //       'replies'=>new UsersResource($this->whenLoaded('replies')),
+            //       'likes'=>new UsersResource($this->whenLoaded('likes')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at
         ];

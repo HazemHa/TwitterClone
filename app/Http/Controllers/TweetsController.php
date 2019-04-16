@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Tweet;
-use App\Http\Requests\TweetsRequest;
-use Validator;
+use App\Http\Resources\TweetsResource;
 
 class TweetsController extends Controller
 {
@@ -16,11 +15,39 @@ class TweetsController extends Controller
         $this->middleware('auth:api');
     }
 
+    public function index(Request $request)
+    {
+        $related = collect();
+        foreach (\Auth::user()->following as $user) {
+            $related->merge($user->tweets);
+        }
+        $lastTweets = \App\Tweet::OrderBy('created_at', 'desc')
+            ->take(20)->get();
+        $tweets = $related->merge($lastTweets);
+        return response()->json(['tweets' => TweetsResource::collection($tweets)]);
+    }
+
+    public function searchUser($title)
+    {
+        return User::query()
+            ->where('title', 'LIKE', "%{$title}%")
+            ->get();
+    }
+
+    public function contentTweet($body)
+    {
+        return \App\Tweet::query()
+            ->where('body', 'LIKE', "%{$body}%")
+            ->get();
+    }
+
+
     /***Store a newly created resource in storage.*
      *
 @param\Illuminate\Http\Request $request *
 @return\Illuminate\Http\Response *
      */
+
 
     public function TweetsFromFollowing()
     {
@@ -37,17 +64,20 @@ class TweetsController extends Controller
 
         $validatedData = $request->validate([
             'body' => 'required',
-            'user_id' => 'required'
         ]);
 
 
 
         if (!\Auth::check()) return $this->AuthorizedUser($request);
-        $newRecord = new Tweets;
+        $newRecord = new Tweet;
         $newRecord->body = $request->body;
-        $newRecord->user_id = $request->user_id;
+        $newRecord->user_id = \Auth::user()->id;
+        $haveTag = preg_match('/^#(\w+)$/m', $request->body, $tag);
+        if ($haveTag) {
+            $newRecord->tag = $tag[1];
+        }
         $result =  $newRecord->save();
-        return $this->createResponseMessage($result);
+        return response()->json(['tweet'=>new TweetsResource($newRecord),'success'=>true]);
     }
 
     // this for update record :
@@ -68,7 +98,7 @@ Update the specified resource in storage.**
 
 
         if (!\Auth::check()) return $this->AuthorizedUser($request);
-        $UpdatedRecord = App\Tweets::find($id);
+        $UpdatedRecord = App\Tweet::find($id);
         $UpdatedRecord->body = $request->body;
         $UpdatedRecord->user_id = $request->user_id;
         $result = $UpdatedRecord->save();
@@ -88,8 +118,8 @@ Remove the specified resource from storage.*
     {
         if (!\Auth::check()) return $this->AuthorizedUser($request);
         try {
-            $record = App\Tweets::findOrFail($id);
-            $result =  App\Tweets::destroy($record->id);
+            $record = App\Tweet::findOrFail($id);
+            $result =  App\Tweet::destroy($record->id);
         } catch (ModelNotFoundException $e) {
             return ['error' => 'there are no data for this record '];
         }

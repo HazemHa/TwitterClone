@@ -4,23 +4,54 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\User;
-use App\Http\Requests\UsersRequest;
-use Validator;
-use Illuminate\Support\Facades\Storage;
+use App\Http\Resources\UsersResource;
 
 class UsersController extends Controller
 {
 
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['Logout', 'Login', 'store']]);
+        $this->middleware('auth:api', ['except' => ['checkMyLogin', 'Logout', 'Login', 'store']]);
     }
+
+
 
     /***Store a newly created resource in storage.*
      *
 @param\Illuminate\Http\Request $request *
 @return\Illuminate\Http\Response *
      */
+
+    public function myFuncitonUnderTest(Request $request)
+    {
+        // return App\Tag::all();
+        $user = User::find(1);
+        $isRegistered = $user->isRegisteredAsLoveReacter(); // true
+        return response()->json(['data'=>$isRegistered],200);
+    }
+    public function UserFoRSuggestions(Request $request)
+    {
+
+
+        $filtered = User::all()->filter(function ($value, $key) {
+            if (!$value->followers->contains(\Auth::user())) {
+                return $value;
+            }
+        });
+        $sorted = $filtered->sortByDesc(function ($value) {
+            return count($value->followers);
+        });
+        // $sorted->values()->take(1)->first()->followers->count()
+        return UsersResource::collection($sorted->values()->take(5));
+    }
+    public function checkMyLogin()
+    {
+        if (\Auth::guard('api')->check()) {
+            return response()->json(['auth' => true, 'user' => \Auth::guard('api')->user()], 200);
+        }
+
+        return response()->json(['auth' => false], 200);
+    }
 
     public function Login(Request $request)
     {

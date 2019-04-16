@@ -3,10 +3,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use App\Followers;
-use App\Http\Requests\FollowersRequest;
-use Validator;
-
+use App\Follower;
 class FollowersController extends Controller
 {
 
@@ -21,16 +18,22 @@ class FollowersController extends Controller
 @return\Illuminate\Http\Response *
      */
 
-     public function index(){
+    public function index()
+    { }
+    public function suggestedUsers()
+    {
+        $users = User::orderByRaw('RAND()')->take(10)->get();
+        return response()->json(['users' => $users], 200);
+    }
 
-     }
+    public function follower()
+    {
+        return response()->json(['followers' => \Auth::user()->followers], 200);
+    }
 
-     public function follower(){
-         return response()->json(['followers'=>\Auth::user()->followers],200);
-     }
-
-     public function following(){
-        return response()->json(['following'=>\Auth::user()->following],200);
+    public function following()
+    {
+        return response()->json(['following' => \Auth::user()->following], 200);
     }
 
 
@@ -43,10 +46,9 @@ class FollowersController extends Controller
         ]);
 
 
-
         if (!\Auth::check()) return $this->AuthorizedUser($request);
-        $newRecord = new Followers;
-        $newRecord->user_id = $request->user_id;
+        $newRecord = new Follower;
+        $newRecord->user_id = \Auth::user()->id;
         $newRecord->follow_id = $request->follow_id;
         $result =  $newRecord->save();
         return $this->createResponseMessage($result);
@@ -69,7 +71,7 @@ Update the specified resource in storage.**
         if (!\Auth::check()) {
             return response()->josn(['message' => 'unauthorized'], 401);
         }
-        $UpdatedRecord = App\Followers::find($id);
+        $UpdatedRecord = App\Follower::find($id);
         $UpdatedRecord->user_id = $request->user_id;
         $UpdatedRecord->follow_id = $request->follow_id;
         $result = $UpdatedRecord->save();
@@ -90,8 +92,8 @@ Remove the specified resource from storage.*
         }
 
         try {
-            $record = App\Followers::findOrFail($id);
-            $result =  App\Followers::destroy($record->id);
+            $record = App\Follower::Where([['follow_id', $id], ['user_id', \Auth::user()->id]])->first();
+            $result =  App\Follower::destroy($record->id);
         } catch (ModelNotFoundException $e) {
             return ['error' => 'there are no data for this record '];
         }

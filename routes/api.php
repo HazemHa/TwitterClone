@@ -24,9 +24,13 @@ Route::resources([
     'profiles' => 'ProfilesController',
     'followers' => 'FollowersController',
 ]);
+Route::get('/myFuncitonUnderTest', 'UsersController@myFuncitonUnderTest');
 Route::post('login', 'UsersController@Login');
-Route::post('logout','UsersController@Logout');
+Route::post('logout', 'UsersController@Logout');
 Route::post('register', 'UsersController@store');
 Route::post('profile', 'UsersController@updateProfile');
+Route::get('checkMyLogin', 'UsersController@checkMyLogin');
 
 Route::get('TweetsFromFollowing', 'TweetsController@TweetsFromFollowing');
+Route::get('UserStatistic', 'ProfilesController@UserStatistic');
+Route::get('UserFoRSuggestions', 'UsersController@UserFoRSuggestions');

@@ -6,7 +6,7 @@ export default {
             access_token: undefined,
             id: -1,
         },
-        auth:false,
+        auth: false,
     },
     getters: {
         getCurrentUser(state) {
@@ -27,6 +27,15 @@ export default {
         }
     },
     actions: {
+        updateIsAuth({
+            commit
+        }, data) {
+            return new Promise((resolve, reject) => {
+                commit('setAuth', data);
+                resolve(commit);
+
+            })
+        },
 
         IndexUsers({
             commit
@@ -40,6 +49,31 @@ export default {
                     })
             })
         },
+        UserStatistic({
+            commit
+        }, data) {
+            return new Promise((resolve, reject) => {
+                axios.get(this.getters.url + `api/UserStatistic`)
+                    .then((res) => {
+                        resolve(res);
+                    }).catch((err) => {
+                        reject(err);
+                    })
+            })
+        },
+        UserFoRSuggestions({
+            commit
+        }, data) {
+            return new Promise((resolve, reject) => {
+                axios.get(this.getters.url + `api/UserFoRSuggestions`)
+                    .then((res) => {
+                        resolve(res);
+                    }).catch((err) => {
+                        reject(err);
+                    })
+            })
+        },
+
         Login({
             commit
         }, data) {
@@ -65,12 +99,25 @@ export default {
 
                 let accessToken = $cookies.get("user").access_token;
                 let user = $cookies.get('user');
-                if (accessToken && user) {
-                    commit("setCurrentUser", user);
-                    axios.defaults.headers.common['Authorization'] = "Bearer " + accessToken;
-                    commit('setAuth', true);
-                    resolve(this.getters['users/isAuth']);
-                } else resolve(this.getters['users/isAuth']);
+                let authServer = false;
+                axios.defaults.headers.common['Authorization'] = "Bearer " + user.access_token;
+
+                axios.get(this.getters.url + 'api/checkMyLogin')
+                    .then(res => {
+                        authServer = res.data.auth;
+                        if (authServer) {
+                            commit('setCurrentUser', res.data.user);
+                            commit('setAuth', true);
+                            axios.defaults.headers.common['Authorization'] = "Bearer " + accessToken;
+                            resolve(this.getters['users/isAuth']);
+
+                        }
+                    }).catch(err => {
+                        commit('setAuth', false);
+                        reject(err);
+                    })
+
+
             });
         },
         Logout({

@@ -13,6 +13,8 @@
 Route::get('/t/{id}',function($id){
     return bcrypt($id);
 });
+
 Route::get('/{any}', function () {
     return view('welcome');
 })->where('any','.*');
+

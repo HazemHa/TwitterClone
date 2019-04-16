@@ -6,6 +6,19 @@ export default {
     mutations: {},
     actions: {
 
+        allTweets({
+            commit
+        }, data) {
+            return new Promise((resolve, reject) => {
+                axios.get(this.getters.url + `api/tweets`)
+                    .then((res) => {
+                        resolve(res);
+                    }).catch((err) => {
+                        reject(err);
+                    })
+            })
+        },
+
         tweetsFromFollowing({
             commit
         }, data) {

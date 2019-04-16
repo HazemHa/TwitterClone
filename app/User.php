@@ -6,9 +6,12 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Passport\HasApiTokens;
 
-class User extends Authenticatable
+use Cog\Contracts\Love\Reacterable\Models\Reacterable as ReacterableContract;
+use Cog\Laravel\Love\Reacterable\Models\Traits\Reacterable;
+
+class User extends Authenticatable implements ReacterableContract
 {
-    use  HasApiTokens,Notifiable;
+    use  HasApiTokens,Notifiable,Reacterable;
 
     /**
      * The attributes that are mass assignable.

@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Profiles;
-use App\Http\Requests\ProfilesRequest;
-use Validator;
 
 class ProfilesController extends Controller
 {
@@ -21,12 +19,24 @@ class ProfilesController extends Controller
      */
 
 
-    public function index(){
+    public function index()
+    { }
 
-    }
+    public function UserStatistic()
+    {
+        $CountTweets = count(\Auth::user()->tweets);
+        $CountFollowers = count(\Auth::user()->followers);
+        $CountFollowing = count(\Auth::user()->following);
 
-    public function myProfile(){
 
+        return response()->json(
+            [
+                'tweets' => $CountTweets,
+                'followers' => $CountFollowers,
+                'following' => $CountFollowing
+            ],
+            200
+        );
     }
     public function store(Request $request)
     {
@@ -91,7 +101,6 @@ Update the specified resource in storage.**
         return $this->createResponseMessage($result);
     }
 
-    // this for destroy record :
     /***
 Remove the specified resource from storage.*
      *

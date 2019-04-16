@@ -16,13 +16,13 @@ class CreateTweetsTable extends Migration
         Schema::create('tweets', function (Blueprint $table) {
             $table->increments('id');
             $table->string('body');
-            $table->unsignedInteger('love_reacter_id')->nullable();
-
+            $table->unsignedBigInteger('love_reactant_id')->nullable();
+            $table->integer('tag_id')->unsigned()->nullable();
             $table->unsignedInteger('user_id');
             $table->foreign('user_id')
-                    ->references('id')
-                    ->on('users')
-                    ->onDelete('cascade');
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
 
             $table->timestamps();
         });

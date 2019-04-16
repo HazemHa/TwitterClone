@@ -22,9 +22,9 @@
                 alt="Image 2"
               ></b-img>
               <span class="infoUser">
-                <span>name</span>
+                <span>{{$store.getters['users/getCurrentUser'].name}}</span>
                 <br>
-                <span>name</span>
+                <span>{{$store.getters['users/getCurrentUser'].username}}</span>
               </span>
             </span>
           </div>
@@ -34,22 +34,27 @@
       <b-row>
         <b-col>
           <div>tweets</div>
-          <div>5</div>
+          <div>{{UserStatistic.tweets}}</div>
         </b-col>
         <b-col>
           <div>Followers</div>
-          <div>1</div>
+          <div>{{UserStatistic.followers}}</div>
         </b-col>
         <b-col>
           <div>following</div>
-          <div>2</div>
+          <div>{{UserStatistic.following}}</div>
         </b-col>
       </b-row>
+      <br>
+      <br>
+
     </b-row>
   </b-container>
 </template>
 <script>
-export default {};
+export default {
+    props:['UserStatistic'],
+};
 </script>
 <style>
 .ProfoileImage {

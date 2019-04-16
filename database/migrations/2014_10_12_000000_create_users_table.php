@@ -22,6 +22,7 @@ class CreateUsersTable extends Migration
             $table->string('avatar')->nullable();
             $table->string('password');
             $table->text('access_token')->nullable();
+            $table->unsignedBigInteger('love_reacter_id')->nullable();
             $table->timestamps();
         });
     }

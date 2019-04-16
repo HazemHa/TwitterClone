@@ -3,9 +3,13 @@
     <TobAppBar v-if="$store.getters['users/isAuth']"></TobAppBar>
     <b-row>
       <b-col cols="4" v-if="$store.getters['users/isAuth']">
-        <previewInfo></previewInfo>
-        <suggestions></suggestions>
-        <listOfTag></listOfTag>
+        <previewInfo :UserStatistic="UserStatistic" v-if="$store.getters['users/isAuth']"></previewInfo>
+        <br>
+        <br>
+        <suggestions :suggestUser="suggestUser" v-if="$store.getters['users/isAuth']"></suggestions>
+        <br>
+        <br>
+        <listOfTag :tags="tags" v-if="$store.getters['users/isAuth']"></listOfTag>
       </b-col>
       <b-col cols="8">
         <router-view></router-view>
@@ -28,15 +32,54 @@ export default {
     TobAppBar
   },
   data() {
-    return {};
+    return {
+      tags: [],
+      suggestUser: [],
+      UserStatistic: { tweets: 0, followers: 0, following: 0 }
+    };
+  },
+  methods: {
+    fetchTags() {
+      this.$store
+        .dispatch("users/setTokenForRequest")
+        .then(res => {
+          this.$router.push({ name: "home" });
+        })
+        .catch(err => {});
+    },
+    fetchUserInfo() {
+      this.$store
+        .dispatch("users/UserStatistic")
+        .then(res => {
+          this.UserStatistic = res.data;
+        })
+        .catch(err => {
+            if(err.response.data.message.includes("Unauthenticated")){
+                this.$router.push({name:'login'})
+            }
+        });
+    },
+    fetchSuggestionsUser() {
+      this.$store
+        .dispatch("users/UserFoRSuggestions")
+        .then(res => {
+          this.suggestUser = res.data.data;
+        })
+        .catch(err => {});
+    }
   },
   created() {
+
     this.$store
       .dispatch("users/setTokenForRequest")
       .then(res => {
-          this.$router.push({name:'home'})
+          console.log(res);
+        this.$router.push({ name: "home" });
+        this.fetchUserInfo();
+        this.fetchSuggestionsUser();
       })
       .catch(err => {});
+
   }
 };
 </script>
