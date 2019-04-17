@@ -1813,7 +1813,9 @@ __webpack_require__.r(__webpack_exports__);
     fetchTags: function fetchTags() {
       var _this = this;
 
-      this.$store.dispatch("users/setTokenForRequest").then(function (res) {
+      this.$store.dispatch("tweets/TagsData").then(function (res) {
+        _this.tags = res.data.data;
+
         _this.$router.push({
           name: "home"
         });
@@ -1853,6 +1855,8 @@ __webpack_require__.r(__webpack_exports__);
       _this4.fetchUserInfo();
 
       _this4.fetchSuggestionsUser();
+
+      _this4.fetchTags();
     })["catch"](function (err) {});
   }
 });
@@ -2439,6 +2443,20 @@ __webpack_require__.r(__webpack_exports__);
       tweets: []
     };
   },
+  watch: {
+    $route: function $route(to, from) {
+      // Put your logic here...
+      if (to.params.text) {
+        this.$store.dispatch("tweets/tweetsTag", {
+          text: to.params.text
+        }).then(function (res) {
+          console.log(res);
+        })["catch"](function (err) {
+          console.log(err);
+        });
+      }
+    }
+  },
   computed: {
     reOrderTweets: function reOrderTweets() {
       return this.tweets.reverse();
@@ -2578,7 +2596,9 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-/* harmony default export */ __webpack_exports__["default"] = ({});
+/* harmony default export */ __webpack_exports__["default"] = ({
+  props: ["tags"]
+});
 
 /***/ }),
 
@@ -2754,14 +2774,84 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ["tweets"],
+  data: function data() {
+    return {
+      comment: "",
+      tweet_id: 0
+    };
+  },
   methods: {
+    setIDForTweet: function setIDForTweet(id) {
+      this.tweet_id = id;
+    },
     reply: function reply(id) {
-      alert("reply " + id);
+      var _this = this;
+
+      this.$store.dispatch("reply/StoreReply", {
+        tweet_id: id,
+        body: this.comment
+      }).then(function (res) {
+        if (res.data.success) {
+          _this.$toaster.success(res.data.success);
+        }
+      })["catch"](function (err) {
+        _this.$toaster.error(err.response.data.errors.body[0]);
+
+        ;
+      });
     },
     love: function love(id) {
       alert("love " + id);
+      this.$store.dispatch("tweets/likeOrDisLike", {
+        tweetID: id
+      }).then(function (res) {
+        console.log(res);
+      })["catch"](function (err) {
+        console.log(err);
+      });
+    },
+    clearComment: function clearComment() {
+      this.comment = "";
+    },
+    handleOk: function handleOk(bvModalEvt) {
+      // Prevent modal from closing
+      bvModalEvt.preventDefault();
+
+      if (!this.comment) {
+        alert("Please enter your comment");
+      } else {
+        this.handleSubmit();
+      }
+    },
+    handleSubmit: function handleSubmit() {
+      var _this2 = this;
+
+      this.reply(this.tweet_id);
+      this.clearComment();
+      this.$nextTick(function () {
+        // Wrapped in $nextTick to ensure DOM is rendered before closing
+        _this2.$refs.modal.hide();
+      });
     }
   },
   watch: {
@@ -2825,6 +2915,8 @@ __webpack_require__.r(__webpack_exports__);
       }).then(function (res) {
         if (res.data.success) {
           _this.$emit('newTweet', res.data.tweet);
+
+          _this.body = "";
 
           _this.$toaster.success("Done :D");
         }
@@ -75222,32 +75314,46 @@ var render = function() {
         _c("h5", [_vm._v("Trends for you")])
       ]),
       _vm._v(" "),
-      _c("b-row", [
-        _c("div", { staticClass: "w-100" }),
-        _vm._v(" "),
-        _c(
-          "div",
-          [
-            _c("b-link", { attrs: { href: "#foo" } }, [
-              _vm._v("#Disabled Link")
-            ]),
-            _vm._v(" "),
-            _c(
-              "div",
-              {
-                staticStyle: {
-                  "font-size": "10px",
-                  "font-family": "Arial, Helvetica, sans-serif"
-                }
-              },
-              [_vm._v("51,5 tweet")]
-            )
-          ],
-          1
-        )
-      ])
+      _vm._l(_vm.tags, function(index, tag) {
+        return _c("b-row", { key: index }, [
+          _c("div", { staticClass: "w-100" }),
+          _vm._v(" "),
+          _c(
+            "div",
+            [
+              _c(
+                "router-link",
+                {
+                  attrs: {
+                    to: { name: "tag", params: { text: tag } },
+                    tag: "b-link"
+                  }
+                },
+                [
+                  _c("b-link", { attrs: { href: "#foo" } }, [
+                    _vm._v("#" + _vm._s(tag))
+                  ])
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _c(
+                "div",
+                {
+                  staticStyle: {
+                    "font-size": "10px",
+                    "font-family": "Arial, Helvetica, sans-serif"
+                  }
+                },
+                [_vm._v(_vm._s(_vm.tags[tag]) + " tweets")]
+              )
+            ],
+            1
+          )
+        ])
+      })
     ],
-    1
+    2
   )
 }
 var staticRenderFns = []
@@ -75492,119 +75598,166 @@ var render = function() {
   return _vm.tweets.length > 0
     ? _c(
         "b-container",
-        _vm._l(_vm.tweets, function(tweet) {
-          return _c(
-            "div",
-            { key: tweet.id },
-            [
-              _c("br"),
-              _vm._v(" "),
-              _c("br"),
-              _vm._v(" "),
-              _c("br"),
-              _vm._v(" "),
-              _c("br"),
-              _vm._v(" "),
-              _c(
-                "b-row",
-                { staticClass: "ProfoileImage" },
-                [
-                  _c("b-img", {
-                    attrs: {
-                      thumbnail: "",
-                      rounded: "circle",
-                      width: "45px",
-                      height: "45px",
-                      src:
-                        tweet.user == undefined
-                          ? ""
-                          : _vm.$store.getters.url + tweet.user.avatar,
-                      alt: "Image 2"
-                    }
-                  }),
-                  _vm._v(" "),
-                  _c("span", [
+        [
+          _vm._l(_vm.tweets, function(tweet) {
+            return _c(
+              "div",
+              { key: tweet.id },
+              [
+                _c("br"),
+                _vm._v(" "),
+                _c("br"),
+                _vm._v(" "),
+                _c("br"),
+                _vm._v(" "),
+                _c("br"),
+                _vm._v(" "),
+                _c(
+                  "b-row",
+                  { staticClass: "ProfoileImage" },
+                  [
+                    _c("b-img", {
+                      attrs: {
+                        thumbnail: "",
+                        rounded: "circle",
+                        width: "45px",
+                        height: "45px",
+                        src:
+                          tweet.user == undefined
+                            ? ""
+                            : _vm.$store.getters.url + tweet.user.avatar,
+                        alt: "Image 2"
+                      }
+                    }),
+                    _vm._v(" "),
                     _c("span", [
-                      _vm._v(
-                        _vm._s(tweet.user == undefined ? "" : tweet.user.name)
-                      )
-                    ]),
-                    _vm._v(" "),
-                    _c("br"),
-                    _vm._v(" "),
-                    _c("p", [
-                      _vm._v(_vm._s(tweet.user == undefined ? "" : tweet.body))
+                      _c("span", [
+                        _vm._v(
+                          _vm._s(tweet.user == undefined ? "" : tweet.user.name)
+                        )
+                      ]),
+                      _vm._v(" "),
+                      _c("br"),
+                      _vm._v(" "),
+                      _c("p", [
+                        _vm._v(
+                          _vm._s(tweet.user == undefined ? "" : tweet.body)
+                        )
+                      ])
                     ])
-                  ])
-                ],
-                1
-              ),
-              _vm._v(" "),
+                  ],
+                  1
+                ),
+                _vm._v(" "),
+                _c(
+                  "b-row",
+                  [
+                    _c(
+                      "b-col",
+                      [
+                        _c(
+                          "b-button",
+                          { attrs: { variant: "outline-primary", size: "sm" } },
+                          [
+                            _c("i", { staticClass: "material-icons" }, [
+                              _vm._v("comment")
+                            ]),
+                            _vm._v("(5)\n        ")
+                          ]
+                        )
+                      ],
+                      1
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "b-col",
+                      [
+                        _c(
+                          "b-button",
+                          {
+                            directives: [
+                              {
+                                name: "b-modal",
+                                rawName: "v-b-modal.modal-replay",
+                                modifiers: { "modal-replay": true }
+                              }
+                            ],
+                            attrs: { variant: "outline-primary", size: "sm" },
+                            on: {
+                              click: function($event) {
+                                return _vm.setIDForTweet(tweet.id)
+                              }
+                            }
+                          },
+                          [_c("i", { staticClass: "fas fa-exchange-alt" })]
+                        )
+                      ],
+                      1
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "b-col",
+                      [
+                        _c(
+                          "b-button",
+                          {
+                            attrs: { variant: "outline-primary", size: "sm" },
+                            on: {
+                              click: function($event) {
+                                return _vm.love(tweet.id)
+                              }
+                            }
+                          },
+                          [_c("i", { staticClass: "fas fa-heart" })]
+                        )
+                      ],
+                      1
+                    )
+                  ],
+                  1
+                )
+              ],
+              1
+            )
+          }),
+          _vm._v(" "),
+          _c(
+            "b-modal",
+            {
+              ref: "modal",
+              attrs: { id: "modal-replay", title: "Submit your Comment" },
+              on: { ok: _vm.handleOk, shown: _vm.clearComment }
+            },
+            [
               _c(
-                "b-row",
+                "form",
+                {
+                  on: {
+                    submit: function($event) {
+                      $event.stopPropagation()
+                      $event.preventDefault()
+                      return _vm.handleSubmit($event)
+                    }
+                  }
+                },
                 [
-                  _c(
-                    "b-col",
-                    [
-                      _c(
-                        "b-button",
-                        { attrs: { variant: "outline-primary", size: "sm" } },
-                        [
-                          _c("i", { staticClass: "material-icons" }, [
-                            _vm._v("comment")
-                          ]),
-                          _vm._v("(5)\n        ")
-                        ]
-                      )
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "b-col",
-                    [
-                      _c(
-                        "b-button",
-                        {
-                          attrs: { variant: "outline-primary", size: "sm" },
-                          on: {
-                            click: function($event) {
-                              return _vm.reply(tweet.id)
-                            }
-                          }
-                        },
-                        [_c("i", { staticClass: "fas fa-exchange-alt" })]
-                      )
-                    ],
-                    1
-                  ),
-                  _vm._v(" "),
-                  _c(
-                    "b-col",
-                    [
-                      _c(
-                        "b-button",
-                        {
-                          attrs: { variant: "outline-primary", size: "sm" },
-                          on: {
-                            click: function($event) {
-                              return _vm.love(tweet.id)
-                            }
-                          }
-                        },
-                        [_c("i", { staticClass: "fas fa-heart" })]
-                      )
-                    ],
-                    1
-                  )
+                  _c("b-textarea", {
+                    attrs: { placeholder: "Enter your Comment" },
+                    model: {
+                      value: _vm.comment,
+                      callback: function($$v) {
+                        _vm.comment = $$v
+                      },
+                      expression: "comment"
+                    }
+                  })
                 ],
                 1
               )
-            ],
-            1
+            ]
           )
-        }),
-        0
+        ],
+        2
       )
     : _vm._e()
 }
@@ -92754,6 +92907,11 @@ var router = new vue_router__WEBPACK_IMPORTED_MODULE_4__["default"]({
     name: "profile",
     component: _User_profile_vue__WEBPACK_IMPORTED_MODULE_3__["default"],
     beforeEnter: _Auth__WEBPACK_IMPORTED_MODULE_5__["default"]
+  }, {
+    path: "/tag/:text",
+    name: "tag",
+    component: _parts_main_vue__WEBPACK_IMPORTED_MODULE_0__["default"],
+    beforeEnter: _Auth__WEBPACK_IMPORTED_MODULE_5__["default"]
   }],
   mode: 'history'
 });
@@ -92992,48 +93150,85 @@ __webpack_require__.r(__webpack_exports__);
   getters: {},
   mutations: {},
   actions: {
-    allTweets: function allTweets(_ref, data) {
+    //
+    tweetsTag: function tweetsTag(_ref, data) {
       var _this = this;
 
       var commit = _ref.commit;
       return new Promise(function (resolve, reject) {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this.getters.url + "api/tweets").then(function (res) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this.getters.url + "api/tweetsTag/".concat(data.text)).then(function (res) {
           resolve(res);
         })["catch"](function (err) {
           reject(err);
         });
       });
     },
-    tweetsFromFollowing: function tweetsFromFollowing(_ref2, data) {
+    TagsData: function TagsData(_ref2, data) {
       var _this2 = this;
 
       var commit = _ref2.commit;
       return new Promise(function (resolve, reject) {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this2.getters.url + "api/tweetsFromFollowing").then(function (res) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this2.getters.url + "api/TagsData").then(function (res) {
           resolve(res);
         })["catch"](function (err) {
           reject(err);
         });
       });
     },
-    StoreTweets: function StoreTweets(_ref3, data) {
+    likeOrDisLike: function likeOrDisLike(_ref3, data) {
       var _this3 = this;
 
       var commit = _ref3.commit;
       return new Promise(function (resolve, reject) {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a.post(_this3.getters.url + "api/tweets", data).then(function (res) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.post(_this3.getters.url + "api/likeOrDisLike/".concat(data.tweetID)).then(function (res) {
           resolve(res);
         })["catch"](function (err) {
           reject(err);
         });
       });
     },
-    DestroyTweets: function DestroyTweets(_ref4, data) {
+    allTweets: function allTweets(_ref4, data) {
       var _this4 = this;
 
       var commit = _ref4.commit;
       return new Promise(function (resolve, reject) {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a["delete"](_this4.getters.url + "api/tweets/".concat(data.id)).then(function (res) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this4.getters.url + "api/tweets").then(function (res) {
+          resolve(res);
+        })["catch"](function (err) {
+          reject(err);
+        });
+      });
+    },
+    tweetsFromFollowing: function tweetsFromFollowing(_ref5, data) {
+      var _this5 = this;
+
+      var commit = _ref5.commit;
+      return new Promise(function (resolve, reject) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this5.getters.url + "api/tweetsFromFollowing").then(function (res) {
+          resolve(res);
+        })["catch"](function (err) {
+          reject(err);
+        });
+      });
+    },
+    StoreTweets: function StoreTweets(_ref6, data) {
+      var _this6 = this;
+
+      var commit = _ref6.commit;
+      return new Promise(function (resolve, reject) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.post(_this6.getters.url + "api/tweets", data).then(function (res) {
+          resolve(res);
+        })["catch"](function (err) {
+          reject(err);
+        });
+      });
+    },
+    DestroyTweets: function DestroyTweets(_ref7, data) {
+      var _this7 = this;
+
+      var commit = _ref7.commit;
+      return new Promise(function (resolve, reject) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a["delete"](_this7.getters.url + "api/tweets/".concat(data.id)).then(function (res) {
           resolve(res);
         })["catch"](function (err) {
           reject(err);

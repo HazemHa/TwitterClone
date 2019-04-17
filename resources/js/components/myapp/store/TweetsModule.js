@@ -4,7 +4,46 @@ export default {
     state: {},
     getters: {},
     mutations: {},
-    actions: {
+    actions: { //
+
+        tweetsTag({
+            commit
+        }, data) {
+            return new Promise((resolve, reject) => {
+                axios.get(this.getters.url + `api/tweetsTag/${data.text}`)
+                    .then((res) => {
+                        resolve(res);
+                    }).catch((err) => {
+                        reject(err);
+                    })
+            })
+        },
+
+        TagsData({
+            commit
+        }, data) {
+            return new Promise((resolve, reject) => {
+                axios.get(this.getters.url + `api/TagsData`)
+                    .then((res) => {
+                        resolve(res);
+                    }).catch((err) => {
+                        reject(err);
+                    })
+            })
+        },
+
+        likeOrDisLike({
+            commit
+        }, data) {
+            return new Promise((resolve, reject) => {
+                axios.post(this.getters.url + `api/likeOrDisLike/${data.tweetID}`)
+                    .then((res) => {
+                        resolve(res);
+                    }).catch((err) => {
+                        reject(err);
+                    })
+            })
+        },
 
         allTweets({
             commit

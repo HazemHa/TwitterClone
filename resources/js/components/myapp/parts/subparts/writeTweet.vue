@@ -38,6 +38,7 @@ export default {
         .then(res => {
           if (res.data.success) {
               this.$emit('newTweet',res.data.tweet);
+              this.body = "";
             this.$toaster.success("Done :D");
           }
         })

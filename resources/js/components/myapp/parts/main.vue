@@ -23,10 +23,25 @@ export default {
       tweets: []
     };
   },
-  computed:{
-       reOrderTweets(){
-           return this.tweets.reverse();
-       }
+  watch: {
+    $route(to, from) {
+      // Put your logic here...
+      if (to.params.text) {
+        this.$store
+          .dispatch("tweets/tweetsTag", {text:to.params.text})
+          .then(res => {
+            console.log(res);
+          })
+          .catch(err => {
+            console.log(err);
+          });
+      }
+    }
+  },
+  computed: {
+    reOrderTweets() {
+      return this.tweets.reverse();
+    }
   },
   created() {
     this.$store

@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Tweet;
+use App\Tag;
 use App\Http\Resources\TweetsResource;
+use App\Http\Resources\TagResource;
 
 class TweetsController extends Controller
 {
@@ -13,6 +15,12 @@ class TweetsController extends Controller
     public function __construct()
     {
         $this->middleware('auth:api');
+    }
+    public function likeOrDisLike(Request $request,$tweetID){
+        $tweet = \App\Tweet::find($tweetID);
+        $result = $tweet->toggleLikeBy();
+
+        return response()->json(['result'=>$result],200);
     }
 
     public function index(Request $request)
@@ -25,6 +33,12 @@ class TweetsController extends Controller
             ->take(20)->get();
         $tweets = $related->merge($lastTweets);
         return response()->json(['tweets' => TweetsResource::collection($tweets)]);
+    }
+
+    public function tweetsTag($text)
+    {
+           $data = Tag::where('body',$text)->get();
+           return TagResource::collection($data);;
     }
 
     public function searchUser($title)
@@ -59,6 +73,25 @@ class TweetsController extends Controller
     {
         return response()->json(['tweets' => \Auth::user()->tweets], 200);
     }
+    public function TagsData()
+    {
+
+        $collection = \App\Tag::all();
+        $grouped = $collection->mapToGroups(function ($item, $key) {
+            return [$item['body'] => $item['tweet_id']];
+        });
+
+        $countedTag = $grouped->map(function ($item) {
+            return count($item);
+        });
+
+        $sorted = $countedTag->sortByDesc(function ($value) {
+            return $value;
+        });
+
+        return response()->json(['data' => $sorted->take(7)], 200);
+
+    }
     public function store(Request $request)
     {
 
@@ -72,11 +105,16 @@ class TweetsController extends Controller
         $newRecord = new Tweet;
         $newRecord->body = $request->body;
         $newRecord->user_id = \Auth::user()->id;
-        $haveTag = preg_match('/^#(\w+)$/m', $request->body, $tag);
+        $haveTag = preg_match('/^#(\w+)$/m', $request->body, $tagBody);
+        $result = $newRecord->save();
+
         if ($haveTag) {
-            $newRecord->tag = $tag[1];
+            $tag = new Tag;
+            $tag->body =$tagBody[1];
+            $tag->tweet_id = $newRecord->id;
+            $result &= $tag->save();
         }
-        $result =  $newRecord->save();
+
         return response()->json(['tweet'=>new TweetsResource($newRecord),'success'=>true]);
     }
 

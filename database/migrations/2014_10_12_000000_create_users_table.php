@@ -18,11 +18,10 @@ class CreateUsersTable extends Migration
             $table->string('name');
             $table->string('username', 100)->unique();
             $table->string('email')->unique();
-            $table->string('cover')->nullable();
-            $table->string('avatar')->nullable();
+            $table->string('cover')->default('defaultCover.png');
+            $table->string('avatar')->default('defaultAvatar.png');
             $table->string('password');
             $table->text('access_token')->nullable();
-            $table->unsignedBigInteger('love_reacter_id')->nullable();
             $table->timestamps();
         });
     }

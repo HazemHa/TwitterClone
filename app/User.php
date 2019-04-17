@@ -5,13 +5,11 @@ namespace App;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Passport\HasApiTokens;
-
-use Cog\Contracts\Love\Reacterable\Models\Reacterable as ReacterableContract;
-use Cog\Laravel\Love\Reacterable\Models\Traits\Reacterable;
-
-class User extends Authenticatable implements ReacterableContract
+use Cog\Laravel\Love\Liker\Models\Traits\Liker;
+use Cog\Contracts\Love\Liker\Models\Liker as LikerContract;
+class User extends Authenticatable implements LikerContract
 {
-    use  HasApiTokens,Notifiable,Reacterable;
+    use  HasApiTokens,Notifiable,Liker;
 
     /**
      * The attributes that are mass assignable.
@@ -68,10 +66,7 @@ class User extends Authenticatable implements ReacterableContract
         return $this->hasMany(Tweet::class)->withCount('replies');
     }
 
-    public function likes()
-    {
-        return $this->hasMany(Like::class);
-    }
+
 
     public function replies()
     {

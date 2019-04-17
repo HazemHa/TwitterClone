@@ -28,7 +28,8 @@ class ReplyController extends Controller
     {
 
         $validatedData = $request->validate([
-            'tweet_id' => 'required'
+            'tweet_id' => 'required',
+            'body'=>'required'
         ]);
 
 

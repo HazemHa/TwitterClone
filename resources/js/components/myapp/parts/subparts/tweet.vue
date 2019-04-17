@@ -29,7 +29,12 @@
           </b-button>
         </b-col>
         <b-col>
-          <b-button variant="outline-primary" @click="reply(tweet.id)" size="sm">
+          <b-button
+            v-b-modal.modal-replay
+            @click="setIDForTweet(tweet.id)"
+            variant="outline-primary"
+            size="sm"
+          >
             <i class="fas fa-exchange-alt"></i>
           </b-button>
         </b-col>
@@ -40,19 +45,78 @@
         </b-col>
       </b-row>
     </div>
+
+    <!-- Modal Component -->
+    <b-modal
+      id="modal-replay"
+      ref="modal"
+      title="Submit your Comment"
+      @ok="handleOk"
+      @shown="clearComment"
+    >
+      <form @submit.stop.prevent="handleSubmit">
+        <b-textarea v-model="comment" placeholder="Enter your Comment"></b-textarea>
+      </form>
+    </b-modal>
   </b-container>
 </template>
 <script>
 export default {
   props: ["tweets"],
-
-  methods:{
-      reply(id){
-       alert("reply "+id);
-      },
-      love(id){
-       alert("love "+id);
-      },
+  data() {
+    return {
+      comment: "",
+      tweet_id: 0
+    };
+  },
+  methods: {
+    setIDForTweet(id) {
+      this.tweet_id = id;
+    },
+    reply(id) {
+      this.$store
+        .dispatch("reply/StoreReply", { tweet_id: id,body:this.comment})
+        .then(res => {
+          if(res.data.success){
+              this.$toaster.success(res.data.success);
+          }
+        })
+        .catch(err => {
+          this.$toaster.error(err.response.data.errors.body[0]);
+          ;
+        });
+    },
+    love(id) {
+      alert("love " + id);
+      this.$store
+        .dispatch("tweets/likeOrDisLike", { tweetID: id})
+        .then(res => {
+          console.log(res);
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    clearComment() {
+      this.comment = "";
+    },
+    handleOk(bvModalEvt) {
+      // Prevent modal from closing
+      bvModalEvt.preventDefault();
+      if (!this.comment) {
+        alert("Please enter your comment");
+      } else {
+        this.handleSubmit();
+      }
+    },
+    handleSubmit() {
+      this.reply(this.tweet_id);
+      this.clearComment();
+      this.$nextTick(() => {
+        // Wrapped in $nextTick to ensure DOM is rendered before closing
+        this.$refs.modal.hide();
+      });
+    }
   },
 
   watch: {

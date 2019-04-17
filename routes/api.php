@@ -30,7 +30,9 @@ Route::post('logout', 'UsersController@Logout');
 Route::post('register', 'UsersController@store');
 Route::post('profile', 'UsersController@updateProfile');
 Route::get('checkMyLogin', 'UsersController@checkMyLogin');
-
+Route::get('TagsData', 'TweetsController@TagsData');
+Route::get('tweetsTag/{text}','TweetsController@tweetsTag');
+Route::post('likeOrDisLike/{tweetID}', 'TweetsController@likeOrDisLike');
 Route::get('TweetsFromFollowing', 'TweetsController@TweetsFromFollowing');
 Route::get('UserStatistic', 'ProfilesController@UserStatistic');
 Route::get('UserFoRSuggestions', 'UsersController@UserFoRSuggestions');

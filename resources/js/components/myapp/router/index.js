@@ -30,6 +30,14 @@ const router = new VueRouter({
             component: profile,
             beforeEnter:authUser,
         }
+        ,
+        {
+            path: "/tag/:text",
+            name: "tag",
+            component: main,
+            beforeEnter:authUser,
+        }
+
     ],
     mode: 'history'
 });

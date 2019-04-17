@@ -3,11 +3,11 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
-use Cog\Contracts\Love\Reactable\Models\Reactable as ReactableContract;
-use Cog\Laravel\Love\Reactable\Models\Traits\Reactable;
-class Tweet extends Model implements ReactableContract
+use Cog\Laravel\Love\Likeable\Models\Traits\Likeable;
+use Cog\Contracts\Love\Likeable\Models\Likeable as LikeableContract;
+class Tweet extends Model implements LikeableContract
 {
-    use Reactable;
+    use Likeable;
 
     protected $table = 'tweets';
     protected $primaryKey  = 'id';
@@ -33,8 +33,5 @@ class Tweet extends Model implements ReactableContract
         return $this->hasMany(Reply::class)->with('user')->latest();
     }
 
-    public function likes()
-    {
-        return $this->hasMany(Like::class);
-    }
+
 }

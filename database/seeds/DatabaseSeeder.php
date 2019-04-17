@@ -13,15 +13,15 @@ class DatabaseSeeder extends Seeder
     {
         // $this->call(UsersTableSeeder::class);
 
-        // factory(App\User::class, 5)->create();
+        //  factory(App\User::class, 5)->create();
 
         //   factory(App\Profile::class, 5)->create();
-        // factory(App\Tweet::class, 5)->create();
-        //  factory(App\Reply::class, 5)->create();
+        factory(App\Tweet::class, 5)->create();
+        factory(App\Reply::class, 5)->create();
 
-        /*  DB::table('followers')->insert([
+        DB::table('followers')->insert([
             'user_id' => 5,
             'follow_id' =>  App\User::inRandomOrder()->first()->id,
         ]);
-        */ }
+    }
 }

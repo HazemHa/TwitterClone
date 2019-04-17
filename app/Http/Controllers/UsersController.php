@@ -5,6 +5,8 @@ use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\User;
 use App\Http\Resources\UsersResource;
+use Cog\Laravel\Love\ReactionType\Models\ReactionType;
+use Cog\Laravel\Love\Facades\Love;
 
 class UsersController extends Controller
 {
@@ -24,10 +26,15 @@ class UsersController extends Controller
 
     public function myFuncitonUnderTest(Request $request)
     {
-        // return App\Tag::all();
-        $user = User::find(1);
-        $isRegistered = $user->isRegisteredAsLoveReacter(); // true
-        return response()->json(['data'=>$isRegistered],200);
+
+
+        $collection = \App\Tag::find(1);
+        return \App\Tag::find(1)->tweets;
+
+
+
+
+        return response()->json(['data' => $collection], 200);
     }
     public function UserFoRSuggestions(Request $request)
     {

@@ -41,8 +41,9 @@ export default {
   methods: {
     fetchTags() {
       this.$store
-        .dispatch("users/setTokenForRequest")
+        .dispatch("tweets/TagsData")
         .then(res => {
+            this.tags = res.data.data;
           this.$router.push({ name: "home" });
         })
         .catch(err => {});
@@ -77,6 +78,7 @@ export default {
         this.$router.push({ name: "home" });
         this.fetchUserInfo();
         this.fetchSuggestionsUser();
+        this.fetchTags();
       })
       .catch(err => {});
 

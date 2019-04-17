@@ -25,6 +25,7 @@ return TweetsResource::collection(Tweets::all());
             'body' => $this->body,
             'user_id' => $this->user_id,
             'id' => $this->id,
+            'likesCount'=>$this->likesCount,
             'user' => array(
                 'name' => \App\User::find($this->user_id)->name,
                 'email' => \App\User::find($this->user_id)->email,
