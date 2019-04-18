@@ -30,7 +30,7 @@ class Tweet extends Model implements LikeableContract
 
     public function replies()
     {
-        return $this->hasMany(Reply::class)->with('user')->latest();
+        return $this->hasMany("App\Reply",'tweet_id','id');
     }
 
 

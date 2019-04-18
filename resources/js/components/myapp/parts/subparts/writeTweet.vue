@@ -5,7 +5,7 @@
         :src="$store.getters.url+$store.getters['users/getCurrentUser'].avatar"
         rounded="circle"
         width="45px"
-        hieght="45px"
+        height="45px"
         alt="Circle image"
       ></b-img>
 

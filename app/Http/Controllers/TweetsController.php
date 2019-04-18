@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Tweet;
 use App\Tag;
 use App\Http\Resources\TweetsResource;
-use App\Http\Resources\TagResource;
+use App\Http\Resources\ReplyResource;
 
 class TweetsController extends Controller
 {
@@ -26,19 +26,23 @@ class TweetsController extends Controller
     public function index(Request $request)
     {
         $related = collect();
+        $replies =  ReplyResource::collection(\App\Reply::all());
         foreach (\Auth::user()->following as $user) {
             $related->merge($user->tweets);
         }
-        $lastTweets = \App\Tweet::OrderBy('created_at', 'desc')
+        $data = \App\Tweet::OrderBy('created_at', 'desc')
             ->take(20)->get();
-        $tweets = $related->merge($lastTweets);
-        return response()->json(['tweets' => TweetsResource::collection($tweets)]);
+        $tweetsR = TweetsResource::collection($data);
+        $part1 = $replies->merge($tweetsR);
+        $tweets = $related->merge($part1);
+
+        return response()->json(['tweets' => $tweets],200);
     }
 
     public function tweetsTag($text)
     {
-           $data = Tag::where('body',$text)->get();
-           return TagResource::collection($data);;
+           $data = Tag::where('body',$text)->first()->tweets;
+           return TweetsResource::collection($data);
     }
 
     public function searchUser($title)
@@ -77,18 +81,12 @@ class TweetsController extends Controller
     {
 
         $collection = \App\Tag::all();
-        $grouped = $collection->mapToGroups(function ($item, $key) {
-            return [$item['body'] => $item['tweet_id']];
+        $grouped = $collection->map(function ($item, $key) {
+            return ['name'=>$item->body,'count'=> count($item->tweets)];
         });
-
-        $countedTag = $grouped->map(function ($item) {
-            return count($item);
+        $sorted = $grouped->sortByDesc(function ($value) {
+            return $value['count'];
         });
-
-        $sorted = $countedTag->sortByDesc(function ($value) {
-            return $value;
-        });
-
         return response()->json(['data' => $sorted->take(7)], 200);
 
     }
@@ -99,22 +97,15 @@ class TweetsController extends Controller
             'body' => 'required',
         ]);
 
-
-
-        if (!\Auth::check()) return $this->AuthorizedUser($request);
         $newRecord = new Tweet;
+        $haveTag = preg_match('/^#(\w+)$/m', $request->body, $tagBody);
         $newRecord->body = $request->body;
         $newRecord->user_id = \Auth::user()->id;
-        $haveTag = preg_match('/^#(\w+)$/m', $request->body, $tagBody);
-        $result = $newRecord->save();
-
         if ($haveTag) {
-            $tag = new Tag;
-            $tag->body =$tagBody[1];
-            $tag->tweet_id = $newRecord->id;
-            $result &= $tag->save();
+            $tag = Tag::firstOrCreate(['body'=>$tagBody[1]]);
+            $newRecord->tag_id = $tag->id;
         }
-
+        $result = $newRecord->save();
         return response()->json(['tweet'=>new TweetsResource($newRecord),'success'=>true]);
     }
 

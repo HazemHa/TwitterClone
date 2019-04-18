@@ -2,7 +2,10 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Resource\UsersResource;
+
+use App\Http\Resources\UsersResource;
+use App\Http\Resources\TweetsResource;
+
 
 class ReplyResource extends JsonResource
 {
@@ -23,11 +26,12 @@ class ReplyResource extends JsonResource
 return ReplyResource::collection(Reply::all());
  */
         return [
+            'id'=>$this->id,
             'body' => $this->body,
             'user_id' => $this->user_id,
             'tweet_id' => $this->tweet_id,
-            'user'=>new UsersResource($this->whenLoaded('user')),
-            'tweet'=>new UsersResource($this->whenLoaded('tweet')),
+            'user'=>new UsersResource($this->user),
+            'tweet'=>new TweetsResource($this->tweet),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at
         ];

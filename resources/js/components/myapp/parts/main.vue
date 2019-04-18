@@ -25,16 +25,17 @@ export default {
   },
   watch: {
     $route(to, from) {
-      // Put your logic here...
       if (to.params.text) {
         this.$store
           .dispatch("tweets/tweetsTag", {text:to.params.text})
           .then(res => {
-            console.log(res);
+              this.tweets = res.data.data;
           })
           .catch(err => {
-            console.log(err);
           });
+      }
+      if(to.name == "home"){
+       this.fetchAllTweets();
       }
     }
   },
@@ -44,7 +45,11 @@ export default {
     }
   },
   created() {
-    this.$store
+   this.fetchAllTweets();
+  },
+  methods: {
+      fetchAllTweets(){
+ this.$store
       .dispatch("tweets/allTweets")
       .then(res => {
         this.$nextTick(() => {
@@ -54,8 +59,7 @@ export default {
       .catch(err => {
         console.log(err);
       });
-  },
-  methods: {
+      },
     addNewTweet(Tweet) {
       this.tweets.push(Tweet);
     }

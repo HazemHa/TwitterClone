@@ -65,6 +65,7 @@ class User extends Authenticatable implements LikerContract
     {
         return $this->hasMany(Tweet::class)->withCount('replies');
     }
+    
 
 
 

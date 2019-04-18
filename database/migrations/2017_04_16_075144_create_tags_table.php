@@ -16,8 +16,6 @@ class CreateTagsTable extends Migration
         Schema::create('tags', function (Blueprint $table) {
             $table->increments('id');
              $table->string('body', 255);
-            $table->integer('tweet_id')->unsigned();
-            $table->foreign('tweet_id')->references('id')->on('tweets')->onDelete('cascade');
             $table->timestamps();
         });
     }

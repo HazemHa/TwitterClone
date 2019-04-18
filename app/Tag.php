@@ -12,6 +12,6 @@ class Tag extends Model
 
     public function tweets()
     {
-        return $this->belongsTo('App\Tweet','tweet_id','id');
+        return $this->hasMany('App\Tweet','tag_id','id');
     }
 }

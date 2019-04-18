@@ -2,7 +2,7 @@
   <b-container class="bv-example-row">
     <b-row>
       <b-col>
-        <b-button href="#" size="sm" variant="outline-primary">Home</b-button>
+        <b-button href="#" size="sm" variant="outline-primary" @click="home">Home</b-button>
       </b-col>
       <b-col>
         <b-button href="#" size="sm" variant="outline-primary">Notifications</b-button>
@@ -53,6 +53,9 @@ export default {
   methods: {
     clearTweet() {
       this.tweet = "";
+    },
+    home(){
+      this.$router.push({name:'home'});
     },
     handleOk(bvModalEvt) {
       // Prevent modal from closing

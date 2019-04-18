@@ -27,10 +27,12 @@ export default {
                 if(res.data.success){
                     this.$toaster.success("following done");
                 }
+                if(res.data.message){
+                   this.$toaster.info(res.data.message);
+
+                }
            }).catch(err=>{
-               if(err.response.data.message.includes("23000")){
-                   this.$toaster.info("You already following this person")
-               }
+
            });
         }
     },

@@ -2,7 +2,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-
+use App\Http\Resources\ReplyResource;
 class TweetsResource extends JsonResource
 {
     /**
@@ -26,6 +26,9 @@ return TweetsResource::collection(Tweets::all());
             'user_id' => $this->user_id,
             'id' => $this->id,
             'likesCount'=>$this->likesCount,
+            'isLiked'=>$this->liked,
+            'likesCount'=>$this->likesCount,
+            'replies'=>ReplyResource::collection($this->whenLoaded('replies')),
             'user' => array(
                 'name' => \App\User::find($this->user_id)->name,
                 'email' => \App\User::find($this->user_id)->email,

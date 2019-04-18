@@ -40,13 +40,14 @@ class FollowersController extends Controller
 
     public function store(Request $request)
     {
+        if(\Auth::user()->following->contains('id',(int)$request->follow_id)){
+            $name =  \Auth::user()->following->where('id',(int)$request->follow_id)->first()->name;
+            return response()->json(['message'=>"you following ".$name],200);
+        }
 
         $validatedData = $request->validate([
             'follow_id' => 'required'
         ]);
-
-
-        if (!\Auth::check()) return $this->AuthorizedUser($request);
         $newRecord = new Follower;
         $newRecord->user_id = \Auth::user()->id;
         $newRecord->follow_id = $request->follow_id;
@@ -69,7 +70,7 @@ Update the specified resource in storage.**
         ]);
 
         if (!\Auth::check()) {
-            return response()->josn(['message' => 'unauthorized'], 401);
+            return response()->json(['message' => 'unauthorized'], 401);
         }
         $UpdatedRecord = App\Follower::find($id);
         $UpdatedRecord->user_id = $request->user_id;
@@ -88,7 +89,7 @@ Remove the specified resource from storage.*
     public function destroy($id)
     {
         if (!\Auth::check()) {
-            return response()->josn(['message' => 'unauthorized'], 401);
+            return response()->json(['message' => 'unauthorized'], 401);
         }
 
         try {

@@ -1,24 +1,59 @@
 <template>
   <b-container v-if="tweets.length > 0">
-    <div v-for="(tweet) in tweets" :key="tweet.id">
+    <div v-for="(tweet) in tweets">
       <br>
       <br>
       <br>
       <br>
-      <b-row class="ProfoileImage">
-        <b-img
-          thumbnail
-          rounded="circle"
+      <b-row v-if="tweet.tweet != undefined">
+          <b-col cols="12">
+          <b-img
+          :src="tweet.tweet.user == undefined?'':$store.getters.url+tweet.tweet.user.avatar"
+          alt="Image 2"
           width="45px"
           height="45px"
+          rounded="circle"
+        ></b-img>
+
+        <span>
+          <span>{{tweet.tweet.user == undefined?"":tweet.tweet.user.name}}</span>
+          <br>
+          <p v-html="tweet.tweet.body" style="white-space: pre-line">{{tweet.tweet.user == undefined?"":tweet.tweet.body}}</p>
+        </span>
+     </b-col>
+      <b-col cols="12" style="margin-left:10%;">
+            <div>
+           <b-img
           :src="tweet.user == undefined?'':$store.getters.url+tweet.user.avatar"
           alt="Image 2"
+          width="45px"
+          height="45px"
+          rounded="circle"
         ></b-img>
 
         <span>
           <span>{{tweet.user == undefined?"":tweet.user.name}}</span>
           <br>
-          <p>{{tweet.user == undefined?"":tweet.body}}</p>
+          <p v-html="tweet.body" style="white-space: pre-line">{{tweet.user == undefined?"":tweet.body}}</p>
+        </span>
+</div>
+      </b-col>
+
+
+      </b-row>
+      <b-row v-else class="ProfoileImage">
+        <b-img
+          :src="tweet.user == undefined?'':$store.getters.url+tweet.user.avatar"
+          alt="Image 2"
+          width="45px"
+          height="45px"
+          rounded="circle"
+        ></b-img>
+
+        <span>
+          <span>{{tweet.user == undefined?"":tweet.user.name}}</span>
+          <br>
+          <p v-html="tweet.body" style="white-space: pre-line">{{tweet.user == undefined?"":tweet.body}}</p>
         </span>
       </b-row>
 
@@ -39,8 +74,8 @@
           </b-button>
         </b-col>
         <b-col>
-          <b-button variant="outline-primary" @click="love(tweet.id)" size="sm">
-            <i class="fas fa-heart"></i>
+          <b-button :variant="tweet.isLiked?'danger':'outline-primary'" :ref="'like_'+tweet.id" @click="love(tweet.id,'like_'+tweet.id)" size="sm">
+            <i class="fas fa-heart">{{tweet.likesCount}}</i>
           </b-button>
         </b-col>
       </b-row>
@@ -69,6 +104,8 @@ export default {
       tweet_id: 0
     };
   },
+  mounted() {
+  },
   methods: {
     setIDForTweet(id) {
       this.tweet_id = id;
@@ -86,16 +123,32 @@ export default {
           ;
         });
     },
-    love(id) {
-      alert("love " + id);
+    love(id,refButton) {
+
       this.$store
         .dispatch("tweets/likeOrDisLike", { tweetID: id})
         .then(res => {
-          console.log(res);
+
+         let positionCount = this.$refs[refButton][0].children[0];
+        let numCount = parseInt(this.$refs[refButton][0].children[0].innerHTML);
+        let isLiked = this.$refs[refButton][0].getAttribute("class") == "btn btn-danger btn-sm";
+        if(isLiked){
+        this.changeColor(this.$refs[refButton][0], "btn btn-danger btn-sm","btn btn-outline-primary btn-sm");
+        positionCount.innerHTML= --numCount;
+        }
+        else {
+            this.changeColor(this.$refs[refButton][0], "btn btn-outline-primary btn-sm", "btn btn-danger btn-sm");
+             positionCount.innerHTML= ++numCount;
+        }
+
         })
         .catch(err => {
           console.log(err);
         });
+    },
+    changeColor(btn, grey, blue) {
+      let newClass = btn.getAttribute("class").replace(grey, blue);
+      btn.setAttribute("class", newClass);
     },
     clearComment() {
       this.comment = "";
