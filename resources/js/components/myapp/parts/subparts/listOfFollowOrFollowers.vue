@@ -1,23 +1,25 @@
 <template>
   <b-container>
-    <b-row >
+    <b-row v-for="user in users" :key="user.id">
       <div>
         <b-card
-          title="Name Person"
-          img-src="https://picsum.photos/600/300/?image=25"
+          :title="user.name"
+          :img-src="$store.getters.url+user.cover"
           img-alt="Image"
           img-top
           tag="article"
+          width="600"
+          height="300"
           style="max-width: 20rem;"
           class="mb-2"
         >
          <b-img
-        src="https://picsum.photos/75/75/?image=58"
+        :src="$store.getters.url+user.avatar"
         rounded="circle"
+        width="75"
+        heigth="75"
         alt="Circle image"
       ></b-img>
-          <b-card-text>descripiton for account</b-card-text>
-
           <b-button href="#"  variant="outline-primary">follow</b-button>
         </b-card>
       </div>
@@ -25,5 +27,7 @@
   </b-container>
 </template>
 <script>
-export default {};
+export default {
+    props:['users'],
+};
 </script>

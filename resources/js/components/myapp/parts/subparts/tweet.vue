@@ -1,5 +1,5 @@
 <template>
-  <b-container v-if="tweets.length > 0">
+  <b-container v-if="tweets != undefined">
     <div v-for="(tweet) in tweets">
       <br>
       <br>

@@ -5,7 +5,7 @@
         <b-button href="#" size="sm" variant="outline-primary" @click="home">Home</b-button>
       </b-col>
       <b-col>
-        <b-button href="#" size="sm" variant="outline-primary">Notifications</b-button>
+        <b-button href="#" size="sm" variant="outline-primary" @click="profile">Notifications</b-button>
       </b-col>
       <b-col>
         <img src="https://img.icons8.com/office/40/000000/twitter.png">
@@ -56,6 +56,9 @@ export default {
     },
     home(){
       this.$router.push({name:'home'});
+    },
+    profile(){
+         this.$router.push({name:'profile'});
     },
     handleOk(bvModalEvt) {
       // Prevent modal from closing

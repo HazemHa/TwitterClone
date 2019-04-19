@@ -1,7 +1,7 @@
 import main from '../parts/main.vue';
 import login from '../User/singin.vue';
 import register from '../User/singup.vue';
-import profile from '../User/profile.vue';
+import profile from '../parts/profile.vue';
 import VueRouter from 'vue-router'
 import authUser from './Auth';
 import Vue from 'vue';
@@ -28,7 +28,7 @@ const router = new VueRouter({
             path: "/profile",
             name: "profile",
             component: profile,
-            beforeEnter:authUser,
+        //    beforeEnter:authUser,
         }
         ,
         {

@@ -45,6 +45,7 @@ class TweetsController extends Controller
            return TweetsResource::collection($data);
     }
 
+
     public function searchUser($title)
     {
         return User::query()
@@ -75,7 +76,7 @@ class TweetsController extends Controller
     }
     public function myTweets()
     {
-        return response()->json(['tweets' => \Auth::user()->tweets], 200);
+        return response()->json(['tweets' => TweetsResource::collection(\Auth::user()->tweets)], 200);
     }
     public function TagsData()
     {

@@ -31,6 +31,18 @@ export default {
                     })
             })
         },
+        myTweets({
+            commit
+        }, data) {
+            return new Promise((resolve, reject) => {
+                axios.get(this.getters.url + `api/myTweets`)
+                    .then((res) => {
+                        resolve(res);
+                    }).catch((err) => {
+                        reject(err);
+                    })
+            })
+        },
 
         likeOrDisLike({
             commit

@@ -29,9 +29,14 @@
             </span>
           </div>
         </b-col>
+        <br>
+        <br>
+        <br>
       </b-row>
 
-      <b-row>
+      <b-row id="userstatistics">
+          <br>
+          <br>
         <b-col>
           <div>tweets</div>
           <div>{{UserStatistic.tweets}}</div>
@@ -64,6 +69,9 @@ export default {
 .infoUser {
   position: absolute;
   top: 0px;
+}
+#userstatistics{
+    padding-top: 15%;
 }
 </style>
 

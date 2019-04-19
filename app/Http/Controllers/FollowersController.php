@@ -28,12 +28,12 @@ class FollowersController extends Controller
 
     public function follower()
     {
-        return response()->json(['followers' => \Auth::user()->followers], 200);
+        return response()->json(['users' => \Auth::user()->followers], 200);
     }
 
     public function following()
     {
-        return response()->json(['following' => \Auth::user()->following], 200);
+        return response()->json(['users' => \Auth::user()->following], 200);
     }
 
 

@@ -36,3 +36,7 @@ Route::post('likeOrDisLike/{tweetID}', 'TweetsController@likeOrDisLike');
 Route::get('TweetsFromFollowing', 'TweetsController@TweetsFromFollowing');
 Route::get('UserStatistic', 'ProfilesController@UserStatistic');
 Route::get('UserFoRSuggestions', 'UsersController@UserFoRSuggestions');
+Route::get('myTweets','TweetsController@myTweets');
+Route::get('myFollowers', 'FollowersController@follower');
+Route::get('myFollowing', 'FollowersController@following');
+
