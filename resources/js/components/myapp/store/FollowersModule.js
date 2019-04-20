@@ -55,7 +55,7 @@ export default {
                     })
             })
         },
-        DestroyFollowers({
+        unFollow({
             commit
         }, data) {
             return new Promise((resolve, reject) => {

@@ -28,6 +28,7 @@ Route::get('/myFuncitonUnderTest', 'UsersController@myFuncitonUnderTest');
 Route::post('login', 'UsersController@Login');
 Route::post('logout', 'UsersController@Logout');
 Route::post('register', 'UsersController@store');
+Route::post('users/{id}', 'UsersController@update');
 Route::post('profile', 'UsersController@updateProfile');
 Route::get('checkMyLogin', 'UsersController@checkMyLogin');
 Route::get('TagsData', 'TweetsController@TagsData');
@@ -39,4 +40,6 @@ Route::get('UserFoRSuggestions', 'UsersController@UserFoRSuggestions');
 Route::get('myTweets','TweetsController@myTweets');
 Route::get('myFollowers', 'FollowersController@follower');
 Route::get('myFollowing', 'FollowersController@following');
+Route::get('myReplies', 'TweetsController@myReplies');
+Route::get('searchTweet/{text}', 'TweetsController@SearchByContentTweet');
 

@@ -28,7 +28,7 @@
 
       <b-form-group id="input-group-2" label="Your username:" label-for="input-2">
         <b-form-input
-          id="input-2"
+          id="input-3"
           type="text"
           v-model="form.username"
           required
@@ -75,7 +75,7 @@
 
       <b-form-group id="input-group-2" label="Your password:" label-for="input-2">
         <b-form-input
-          id="input-2"
+          id="input-4"
           type="password"
           v-model="form.password"
           required
@@ -118,7 +118,6 @@ export default {
     onSubmit(evt) {
       evt.preventDefault();
       this.singup();
-      alert(JSON.stringify(this.form));
     },
     onReset(evt) {
       evt.preventDefault();

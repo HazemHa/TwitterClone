@@ -18,6 +18,18 @@ export default {
                     })
             })
         },
+        myReply({
+            commit
+        }, data) {
+            return new Promise((resolve, reject) => {
+                axios.get(this.getters.url + `api/myReplies`)
+                    .then((res) => {
+                        resolve(res);
+                    }).catch((err) => {
+                        reject(err);
+                    })
+            })
+        },
         StoreReply({
             commit
         }, data) {

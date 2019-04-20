@@ -53,7 +53,6 @@ export default {
     onSubmit(evt) {
       evt.preventDefault();
       this.login();
-      alert(JSON.stringify(this.form));
     },
     onReset(evt) {
       evt.preventDefault();

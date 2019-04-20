@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Reply;
+
 class ReplyController extends Controller
 {
     public function __construct()
@@ -29,7 +30,7 @@ class ReplyController extends Controller
 
         $validatedData = $request->validate([
             'tweet_id' => 'required',
-            'body'=>'required'
+            'body' => 'required'
         ]);
 
 
@@ -53,8 +54,8 @@ Remove the specified resource from storage.*
     {
 
         try {
-            $record = App\Reply::Where([['user_id', \Auth::user()->id], ['tweet_id', $id]])->first();
-            $result =  App\Reply::destroy($record->id);
+            $record = Reply::Where([['user_id', \Auth::user()->id], ['id', $id]])->first();
+            $result =  Reply::destroy($record->id);
         } catch (ModelNotFoundException $e) {
             return ['error' => 'there are no data for this record '];
         }

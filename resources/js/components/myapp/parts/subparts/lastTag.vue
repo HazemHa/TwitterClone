@@ -4,6 +4,7 @@
       <div class="w-100"></div>
       <h5>Trends for you</h5>
     </b-row>
+    <b-alert v-if="tags.length == 0" show variant="info">no tags in trend</b-alert>
     <b-row v-for="(tag, index) in tags" :key="index">
       <div class="w-100"></div>
       <div>

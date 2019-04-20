@@ -26,7 +26,7 @@ class User extends Authenticatable implements LikerContract
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token', 'email'
+        'password', 'remember_token'
     ];
 
     /**
@@ -65,7 +65,7 @@ class User extends Authenticatable implements LikerContract
     {
         return $this->hasMany(Tweet::class)->withCount('replies');
     }
-    
+
 
 
 

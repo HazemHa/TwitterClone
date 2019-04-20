@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Follower;
+
 class FollowersController extends Controller
 {
 
@@ -40,9 +41,9 @@ class FollowersController extends Controller
 
     public function store(Request $request)
     {
-        if(\Auth::user()->following->contains('id',(int)$request->follow_id)){
-            $name =  \Auth::user()->following->where('id',(int)$request->follow_id)->first()->name;
-            return response()->json(['message'=>"you following ".$name],200);
+        if (\Auth::user()->following->contains('id', (int)$request->follow_id)) {
+            $name =  \Auth::user()->following->where('id', (int)$request->follow_id)->first()->name;
+            return response()->json(['message' => "you following " . $name], 200);
         }
 
         $validatedData = $request->validate([
@@ -88,13 +89,11 @@ Remove the specified resource from storage.*
      **/
     public function destroy($id)
     {
-        if (!\Auth::check()) {
-            return response()->json(['message' => 'unauthorized'], 401);
-        }
+
 
         try {
-            $record = App\Follower::Where([['follow_id', $id], ['user_id', \Auth::user()->id]])->first();
-            $result =  App\Follower::destroy($record->id);
+            $record = Follower::Where([['follow_id', $id], ['user_id', \Auth::user()->id]])->first();
+            $result =  Follower::destroy($record->id);
         } catch (ModelNotFoundException $e) {
             return ['error' => 'there are no data for this record '];
         }

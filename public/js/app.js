@@ -1805,7 +1805,8 @@ __webpack_require__.r(__webpack_exports__);
       UserStatistic: {
         tweets: 0,
         followers: 0,
-        following: 0
+        following: 0,
+        replies: 0
       }
     };
   },
@@ -1829,7 +1830,7 @@ __webpack_require__.r(__webpack_exports__);
       })["catch"](function (err) {
         if (err.response.data.message.includes("Unauthenticated")) {
           _this2.$router.push({
-            name: 'login'
+            name: "login"
           });
         }
       });
@@ -1923,7 +1924,6 @@ __webpack_require__.r(__webpack_exports__);
     onSubmit: function onSubmit(evt) {
       evt.preventDefault();
       this.login();
-      alert(JSON.stringify(this.form));
     },
     onReset: function onReset(evt) {
       var _this = this;
@@ -2095,7 +2095,6 @@ __webpack_require__.r(__webpack_exports__);
     onSubmit: function onSubmit(evt) {
       evt.preventDefault();
       this.singup();
-      alert(JSON.stringify(this.form));
     },
     onReset: function onReset(evt) {
       var _this = this;
@@ -2304,6 +2303,9 @@ __webpack_require__.r(__webpack_exports__);
       tweets: []
     };
   },
+  mounted: function mounted() {
+    console.log(this.isSearch);
+  },
   watch: {
     $route: function $route(to, from) {
       var _this = this;
@@ -2319,11 +2321,24 @@ __webpack_require__.r(__webpack_exports__);
       if (to.name == "home") {
         this.fetchAllTweets();
       }
+    },
+    isSearch: function isSearch(oldValue, newValue) {
+      if (oldValue) {
+        this.tweets = this.$store.getters['tweets/searchData'];
+      }
+
+      if (oldValue == false) {
+        this.fetchAllTweets();
+      } //  console.log("isSearch old",oldValue,"new isSearch",newValue);
+
     }
   },
   computed: {
     reOrderTweets: function reOrderTweets() {
       return this.tweets.reverse();
+    },
+    isSearch: function isSearch() {
+      return this.$store.getters["tweets/isSearch"];
     }
   },
   created: function created() {
@@ -2383,6 +2398,12 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
 
 
 
@@ -2396,13 +2417,60 @@ __webpack_require__.r(__webpack_exports__);
     return {
       myTweets: [],
       users: [],
+      type: null,
       profileData: null,
       followingOrFollwersTab: false,
       TweetsTab: true,
-      prfileTab: false
+      prfileTab: false,
+      usrInfo: null
     };
   },
+  created: function created() {
+    this.fetchMyTweets();
+    this.usrInfo = this.$parent.UserStatistic; // console.log(this.$parent.UserStatistic);
+  },
   methods: {
+    handlerResult: function handlerResult(id, index, type) {
+      this.receiveEvent(id, index);
+    },
+    receiveEvent: function receiveEvent(id, index) {
+      var _this = this;
+
+      //  this.users = array;
+      if (this.type == "followers") {
+        --this.usrInfo.Followers;
+      } else if (this.type == "following") {
+        --this.usrInfo.following;
+      } else if (this.type == "tweets") {
+        this.$store.dispatch("tweets/DestroyTweets", {
+          id: id
+        }).then(function (res) {
+          if (res.data.success) {
+            _this.$toaster.success(res.data.success);
+          }
+
+          --_this.usrInfo.tweets;
+
+          _this.myTweets.splice(index, 1);
+        })["catch"](function (err) {
+          console.log(err);
+        });
+      } else if (this.type == "replies") {
+        this.$store.dispatch("reply/DestroyReply", {
+          id: id
+        }).then(function (res) {
+          if (res.data.success) {
+            _this.$toaster.success(res.data.success);
+          }
+
+          --_this.usrInfo.replies;
+
+          _this.myTweets.splice(index, 1);
+        })["catch"](function (err) {
+          console.log(err);
+        });
+      }
+    },
     tweets: function tweets() {
       this.TweetsTab = true;
       this.prfileTab = false;
@@ -2421,32 +2489,49 @@ __webpack_require__.r(__webpack_exports__);
       this.prfileTab = false;
       this.fetchMyFollowing();
     },
+    replies: function replies() {
+      this.followingOrFollwersTab = false;
+      this.TweetsTab = true;
+      this.prfileTab = false;
+      this.fetchReplies();
+    },
     profile: function profile() {
       this.followingOrFollwersTab = false;
       this.TweetsTab = false;
       this.prfileTab = true;
     },
     fetchMyTweets: function fetchMyTweets() {
-      var _this = this;
+      var _this2 = this;
 
-      this.$store.dispatch('tweets/myTweets').then(function (res) {
-        _this.myTweets = res.data.tweets;
+      this.$store.dispatch("tweets/myTweets").then(function (res) {
+        _this2.myTweets = res.data.tweets;
+        _this2.type = "tweets";
       })["catch"](function (err) {
         console.log(err);
       });
     },
-    fetchMyFollowing: function fetchMyFollowing() {
-      var _this2 = this;
+    fetchReplies: function fetchReplies() {
+      var _this3 = this;
 
-      this.$store.dispatch('followers/myFollowers').then(function (res) {
-        _this2.users = res.data.users;
+      this.$store.dispatch("reply/myReply").then(function (res) {
+        _this3.myTweets = res.data.tweets;
+        _this3.type = "replies";
+      })["catch"](function (err) {});
+    },
+    fetchMyFollowing: function fetchMyFollowing() {
+      var _this4 = this;
+
+      this.$store.dispatch("followers/myFollowing").then(function (res) {
+        _this4.users = res.data.users;
+        _this4.type = "following";
       })["catch"](function (err) {});
     },
     fetchMyFollower: function fetchMyFollower() {
-      var _this3 = this;
+      var _this5 = this;
 
-      this.$store.dispatch('followers/myFollowing').then(function (res) {
-        _this3.users = res.data.users;
+      this.$store.dispatch("followers/myFollowers").then(function (res) {
+        _this5.users = res.data.users;
+        _this5.type = "followers";
       })["catch"](function (err) {});
     },
     fetchMyProfileData: function fetchMyProfileData() {},
@@ -2508,12 +2593,11 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
-      tweet: ""
+      tweet: "",
+      textSearch: ""
     };
   },
   methods: {
@@ -2522,12 +2606,19 @@ __webpack_require__.r(__webpack_exports__);
     },
     home: function home() {
       this.$router.push({
-        name: 'home'
+        name: "home"
+      });
+    },
+    searchTwitter: function searchTwitter() {
+      if (this.textSearch == "") return;
+      var modifyText = this.textSearch.replace(" ", "-");
+      this.$store.dispatch("tweets/searchTweet", {
+        text: modifyText
       });
     },
     profile: function profile() {
       this.$router.push({
-        name: 'profile'
+        name: "profile"
       });
     },
     handleOk: function handleOk(bvModalEvt) {
@@ -2543,12 +2634,232 @@ __webpack_require__.r(__webpack_exports__);
     handleSubmit: function handleSubmit() {
       var _this = this;
 
-      alert("your tweet sned to server to store there");
       this.clearTweet();
       this.$nextTick(function () {
         // Wrapped in $nextTick to ensure DOM is rendered before closing
         _this.$refs.modal.hide();
       });
+    }
+  },
+  watch: {
+    deep: true,
+    textSearch: function textSearch(oldValue, newValue) {
+      if (oldValue == "") {
+        this.$store.dispatch('tweets/setSearchFinished', false);
+      }
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/myapp/parts/subparts/editProfile.vue?vue&type=script&lang=js&":
+/*!*******************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/myapp/parts/subparts/editProfile.vue?vue&type=script&lang=js& ***!
+  \*******************************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _image_imageUpload_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../image/imageUpload.vue */ "./resources/js/components/myapp/image/imageUpload.vue");
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+  components: {
+    ImageInput: _image_imageUpload_vue__WEBPACK_IMPORTED_MODULE_0__["default"]
+  },
+  data: function data() {
+    return {
+      form: {
+        name: "",
+        username: "",
+        avatar: {
+          imageURL: null
+        },
+        cover: {
+          imageURL: null
+        },
+        ImageCover: null,
+        ImageAvatar: null,
+        email: "",
+        password: ""
+      },
+      show: true
+    };
+  },
+  created: function created() {
+    this.form.email = this.$store.getters["users/getCurrentUser"].email;
+    this.form.password = this.$store.getters["users/getCurrentUser"].password;
+    this.form.name = this.$store.getters["users/getCurrentUser"].name;
+    this.form.username = this.$store.getters["users/getCurrentUser"].username;
+    this.form.cover.imageURL = this.$store.getters.url + this.$store.getters["users/getCurrentUser"].avatar;
+    this.form.avatar.imageURL = this.$store.getters.url + this.$store.getters["users/getCurrentUser"].cover;
+  },
+  methods: {
+    onSubmit: function onSubmit(evt) {
+      evt.preventDefault();
+      this.updateProfile();
+    },
+    onReset: function onReset(evt) {
+      var _this = this;
+
+      evt.preventDefault(); // Reset our form values
+
+      this.form.email = "";
+      this.form.password = "";
+      this.form.name = "";
+      this.form.username = "";
+      this.form.cover = null;
+      this.form.avatar = null;
+      this.show = false;
+      this.$nextTick(function () {
+        _this.show = true;
+      });
+    },
+    updateProfile: function updateProfile() {
+      var _this2 = this;
+
+      var dataForm = new FormData();
+      dataForm.append("id", this.$store.getters["users/getCurrentUser"].id);
+      dataForm.append("email", this.form.email);
+      dataForm.append("password", this.form.password);
+      dataForm.append("name", this.form.name);
+      dataForm.append("username", this.form.username);
+      dataForm.append("cover", this.ImageCover);
+      dataForm.append("avatar", this.ImageAvatar);
+      console.log(dataForm);
+      var data = {
+        data: dataForm,
+        id: this.$store.getters["users/getCurrentUser"].id
+      };
+      this.$store.dispatch("users/UpdateUser", data).then(function (res) {
+        if (res.data.update) {
+          _this2.$toaster.success("Updated Complete");
+
+          _this2.$nextTick();
+        }
+      })["catch"](function (err) {
+        if (err.response.data.errors) {
+          var Obj = Object.keys(err.response.data.errors);
+
+          for (var _i = 0, _Obj = Obj; _i < _Obj.length; _i++) {
+            var error = _Obj[_i];
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+              for (var _iterator = err.response.data.errors[error][Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var errorMessage = _step.value;
+
+                _this2.$toaster.error(errorMessage);
+              }
+            } catch (err) {
+              _didIteratorError = true;
+              _iteratorError = err;
+            } finally {
+              try {
+                if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+                  _iterator["return"]();
+                }
+              } finally {
+                if (_didIteratorError) {
+                  throw _iteratorError;
+                }
+              }
+            }
+          }
+        }
+      });
+    },
+    ReceiveImageCover: function ReceiveImageCover(data) {
+      this.ImageCover = data.file;
+      this.form.cover.imageURL = data.imageURL;
+    },
+    ReceiveImageAvatar: function ReceiveImageAvatar(data) {
+      this.ImageAvatar = data.file;
+      this.form.avatar.imageURL = data.imageURL;
     }
   }
 });
@@ -2564,6 +2875,7 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+//
 //
 //
 //
@@ -2626,8 +2938,28 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
-  props: ['users']
+  props: ["users", "type"],
+  created: function created() {},
+  methods: {
+    unfollow: function unfollow(id, index) {
+      var _this = this;
+
+      this.$store.dispatch("followers/unFollow", {
+        id: id
+      }).then(function (res) {
+        _this.users.splice(index, 1);
+
+        _this.$emit("removeUser", _this.type);
+
+        _this.$toaster.success(res.data.success);
+      })["catch"](function (err) {
+        console.log(err);
+      });
+    }
+  }
 });
 
 /***/ }),
@@ -2699,8 +3031,11 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
-  props: ['UserStatistic']
+  props: ["UserStatistic"]
 });
 
 /***/ }),
@@ -2733,16 +3068,20 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['suggestUser'],
   methods: {
-    follow: function follow(id) {
+    follow: function follow(id, index) {
       var _this = this;
 
       this.$store.dispatch('followers/StoreFollowers', {
         follow_id: id
       }).then(function (res) {
         if (res.data.success) {
+          _this.suggestUser.splice(index, 1);
+
           _this.$toaster.success("following done");
         }
 
@@ -2862,16 +3201,47 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
-  props: ["tweets"],
+  props: ["tweets", "type"],
   data: function data() {
     return {
       comment: "",
-      tweet_id: 0
+      tweet_id: 0,
+      show_remove: false
     };
   },
-  mounted: function mounted() {},
+  mounted: function mounted() {
+    if (this.$route.name.includes("profile")) {
+      this.show_remove = true;
+    }
+  },
   methods: {
+    removeTweet: function removeTweet(id, index) {
+      this.$emit("removeTweet", id, index, this.type);
+    },
     setIDForTweet: function setIDForTweet(id) {
       this.tweet_id = id;
     },
@@ -2887,8 +3257,6 @@ __webpack_require__.r(__webpack_exports__);
         }
       })["catch"](function (err) {
         _this.$toaster.error(err.response.data.errors.body[0]);
-
-        ;
       });
     },
     love: function love(id, refButton) {
@@ -31825,7 +32193,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../../../node_module
 
 
 // module
-exports.push([module.i, "\n.ProfoileImage {\n  position: relative;\n  top: -25px;\n}\n.infoUser {\n  position: absolute;\n  top: 0px;\n}\n#userstatistics{\n    padding-top: 15%;\n}\n", ""]);
+exports.push([module.i, "\n.ProfoileImage {\n  position: relative;\n  top: -25px;\n}\n.infoUser {\n  position: absolute;\n  top: 0px;\n}\n#userstatistics {\n  padding-top: 15%;\n}\n", ""]);
 
 // exports
 
@@ -63778,7 +64146,7 @@ var render = function() {
                 [
                   _c("b-form-input", {
                     attrs: {
-                      id: "input-2",
+                      id: "input-3",
                       type: "text",
                       required: "",
                       placeholder: "Enter username"
@@ -63949,7 +64317,7 @@ var render = function() {
                 [
                   _c("b-form-input", {
                     attrs: {
-                      id: "input-2",
+                      id: "input-4",
                       type: "password",
                       required: "",
                       placeholder: "Enter password"
@@ -64162,7 +64530,20 @@ var render = function() {
                         }
                       }
                     },
-                    [_vm._v("Tweets")]
+                    [_vm._v("Tweets(" + _vm._s(_vm.usrInfo.tweets) + ")")]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "b-button",
+                    {
+                      attrs: { variant: "outline-primary" },
+                      on: {
+                        click: function($event) {
+                          return _vm.replies()
+                        }
+                      }
+                    },
+                    [_vm._v("replies(" + _vm._s(_vm.usrInfo.replies) + ")")]
                   ),
                   _vm._v(" "),
                   _c(
@@ -64175,7 +64556,7 @@ var render = function() {
                         }
                       }
                     },
-                    [_vm._v("Following")]
+                    [_vm._v("Following(" + _vm._s(_vm.usrInfo.following) + ")")]
                   ),
                   _vm._v(" "),
                   _c(
@@ -64188,7 +64569,7 @@ var render = function() {
                         }
                       }
                     },
-                    [_vm._v("Followers")]
+                    [_vm._v("Followers(" + _vm._s(_vm.usrInfo.followers) + ")")]
                   )
                 ],
                 1
@@ -64228,7 +64609,8 @@ var render = function() {
                     expression: "followingOrFollwersTab"
                   }
                 ],
-                attrs: { users: _vm.users }
+                attrs: { type: _vm.type, users: _vm.users },
+                on: { removeUser: _vm.receiveEvent }
               }),
               _vm._v(" "),
               _c("tweet", {
@@ -64240,7 +64622,8 @@ var render = function() {
                     expression: "TweetsTab"
                   }
                 ],
-                attrs: { tweets: _vm.myTweets }
+                attrs: { type: _vm.type, tweets: _vm.myTweets },
+                on: { removeTweet: _vm.handlerResult }
               }),
               _vm._v(" "),
               _c("edit-profile", {
@@ -64316,7 +64699,7 @@ var render = function() {
                   attrs: { href: "#", size: "sm", variant: "outline-primary" },
                   on: { click: _vm.profile }
                 },
-                [_vm._v("Notifications")]
+                [_vm._v("Profile")]
               )
             ],
             1
@@ -64332,7 +64715,29 @@ var render = function() {
           _vm._v(" "),
           _c(
             "b-col",
-            [_c("b-form-input", { attrs: { placeholder: "Search Twiiter" } })],
+            [
+              _c("b-form-input", {
+                attrs: { placeholder: "Search Twitter" },
+                on: {
+                  keyup: function($event) {
+                    if (
+                      !$event.type.indexOf("key") &&
+                      _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")
+                    ) {
+                      return null
+                    }
+                    return _vm.searchTwitter()
+                  }
+                },
+                model: {
+                  value: _vm.textSearch,
+                  callback: function($$v) {
+                    _vm.textSearch = $$v
+                  },
+                  expression: "textSearch"
+                }
+              })
+            ],
             1
           ),
           _vm._v(" "),
@@ -64441,7 +64846,297 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", [_vm._v("\n   field of profiles\n")])
+  return _c(
+    "div",
+    [
+      _vm.show
+        ? _c(
+            "b-form",
+            { on: { submit: _vm.onSubmit, reset: _vm.onReset } },
+            [
+              _c(
+                "b-form-group",
+                {
+                  attrs: {
+                    id: "input-group-1",
+                    label: "Email address:",
+                    "label-for": "input-1",
+                    description:
+                      "We'll never share your email with anyone else."
+                  }
+                },
+                [
+                  _c("b-form-input", {
+                    attrs: {
+                      type: "email",
+                      required: "",
+                      placeholder: "Enter email"
+                    },
+                    model: {
+                      value: _vm.form.email,
+                      callback: function($$v) {
+                        _vm.$set(_vm.form, "email", $$v)
+                      },
+                      expression: "form.email"
+                    }
+                  })
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _c(
+                "b-form-group",
+                {
+                  attrs: {
+                    id: "input-group-2",
+                    label: "Your name:",
+                    "label-for": "input-2"
+                  }
+                },
+                [
+                  _c("b-form-input", {
+                    attrs: {
+                      type: "text",
+                      required: "",
+                      placeholder: "Enter name"
+                    },
+                    model: {
+                      value: _vm.form.name,
+                      callback: function($$v) {
+                        _vm.$set(_vm.form, "name", $$v)
+                      },
+                      expression: "form.name"
+                    }
+                  })
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _c(
+                "b-form-group",
+                {
+                  attrs: {
+                    id: "input-group-2",
+                    label: "Your username:",
+                    "label-for": "input-2"
+                  }
+                },
+                [
+                  _c("b-form-input", {
+                    attrs: {
+                      type: "text",
+                      required: "",
+                      placeholder: "Enter username"
+                    },
+                    model: {
+                      value: _vm.form.username,
+                      callback: function($$v) {
+                        _vm.$set(_vm.form, "username", $$v)
+                      },
+                      expression: "form.username"
+                    }
+                  })
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _c(
+                "b-form-group",
+                {
+                  attrs: {
+                    id: "input-group-2",
+                    label: "Your cover:",
+                    "label-for": "input-2"
+                  }
+                },
+                [
+                  _c(
+                    "image-input",
+                    {
+                      on: { input: _vm.ReceiveImageCover },
+                      model: {
+                        value: _vm.form.cover,
+                        callback: function($$v) {
+                          _vm.$set(_vm.form, "cover", $$v)
+                        },
+                        expression: "form.cover"
+                      }
+                    },
+                    [
+                      _c(
+                        "div",
+                        { attrs: { slot: "activator" }, slot: "activator" },
+                        [
+                          _c("b-img", {
+                            attrs: {
+                              src:
+                                _vm.form.cover.imageURL == null
+                                  ? "http://127.0.0.1:8000/storage/upload.png"
+                                  : _vm.form.cover.imageURL,
+                              fluid: "",
+                              alt: "Responsive image"
+                            }
+                          }),
+                          _vm._v(" "),
+                          !_vm.form.cover
+                            ? _c(
+                                "b-img",
+                                {
+                                  staticClass: "grey lighten-3 mb-3",
+                                  attrs: { size: "280px" }
+                                },
+                                [_c("span", [_vm._v("Click to add Cover")])]
+                              )
+                            : _c(
+                                "b-img",
+                                {
+                                  staticClass: "mb-3",
+                                  attrs: { size: "280px" }
+                                },
+                                [
+                                  _c("img", {
+                                    attrs: {
+                                      src: _vm.form.cover.imageURL,
+                                      alt: "avatar"
+                                    }
+                                  })
+                                ]
+                              )
+                        ],
+                        1
+                      )
+                    ]
+                  )
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _c(
+                "b-form-group",
+                {
+                  attrs: {
+                    id: "input-group-2",
+                    label: "Your avatar:",
+                    "label-for": "input-2"
+                  }
+                },
+                [
+                  _c(
+                    "image-input",
+                    {
+                      on: { input: _vm.ReceiveImageAvatar },
+                      model: {
+                        value: _vm.form.avatar,
+                        callback: function($$v) {
+                          _vm.$set(_vm.form, "avatar", $$v)
+                        },
+                        expression: "form.avatar"
+                      }
+                    },
+                    [
+                      _c(
+                        "div",
+                        { attrs: { slot: "activator" }, slot: "activator" },
+                        [
+                          _c("b-img", {
+                            attrs: {
+                              src:
+                                _vm.form.avatar.imageURL == null
+                                  ? "http://127.0.0.1:8000/storage/upload.png"
+                                  : _vm.form.avatar.imageURL,
+                              fluid: "",
+                              alt: "Responsive image"
+                            }
+                          }),
+                          _vm._v(" "),
+                          !_vm.form.avatar
+                            ? _c(
+                                "b-img",
+                                {
+                                  staticClass: "grey lighten-3 mb-3",
+                                  attrs: {
+                                    size: "120px",
+                                    width: "120px",
+                                    height: "120px"
+                                  }
+                                },
+                                [_c("span", [_vm._v("Click to add avatar")])]
+                              )
+                            : _c(
+                                "b-img",
+                                {
+                                  staticClass: "mb-3",
+                                  attrs: {
+                                    size: "120px",
+                                    width: "120px",
+                                    height: "120px"
+                                  }
+                                },
+                                [
+                                  _c("img", {
+                                    attrs: {
+                                      src: _vm.form.avatar.imageURL,
+                                      alt: "avatar"
+                                    }
+                                  })
+                                ]
+                              )
+                        ],
+                        1
+                      )
+                    ]
+                  )
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _c(
+                "b-form-group",
+                {
+                  attrs: {
+                    id: "input-group-2",
+                    label: "Your password:",
+                    "label-for": "input-2"
+                  }
+                },
+                [
+                  _c("b-form-input", {
+                    attrs: {
+                      id: "input-2",
+                      type: "password",
+                      required: "",
+                      placeholder: "Enter password"
+                    },
+                    model: {
+                      value: _vm.form.password,
+                      callback: function($$v) {
+                        _vm.$set(_vm.form, "password", $$v)
+                      },
+                      expression: "form.password"
+                    }
+                  })
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _c(
+                "b-button",
+                { attrs: { type: "submit", variant: "primary" } },
+                [_vm._v("update")]
+              )
+            ],
+            1
+          )
+        : _vm._e(),
+      _vm._v(" "),
+      _c(
+        "b-card",
+        { staticClass: "mt-3", attrs: { header: "Form Data Result" } },
+        [_c("pre", { staticClass: "m-0" }, [_vm._v(_vm._s(this.form))])]
+      )
+    ],
+    1
+  )
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -64474,6 +65169,12 @@ var render = function() {
         _vm._v(" "),
         _c("h5", [_vm._v("Trends for you")])
       ]),
+      _vm._v(" "),
+      _vm.tags.length == 0
+        ? _c("b-alert", { attrs: { show: "", variant: "info" } }, [
+            _vm._v("no tags in trend")
+          ])
+        : _vm._e(),
       _vm._v(" "),
       _vm._l(_vm.tags, function(tag, index) {
         return _c("b-row", { key: index }, [
@@ -64541,51 +65242,66 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c(
     "b-container",
-    _vm._l(_vm.users, function(user) {
-      return _c("b-row", { key: user.id }, [
-        _c(
-          "div",
-          [
-            _c(
-              "b-card",
-              {
-                staticClass: "mb-2",
-                staticStyle: { "max-width": "20rem" },
-                attrs: {
-                  title: user.name,
-                  "img-src": _vm.$store.getters.url + user.cover,
-                  "img-alt": "Image",
-                  "img-top": "",
-                  tag: "article",
-                  width: "600",
-                  height: "300"
-                }
-              },
-              [
-                _c("b-img", {
+    [
+      _vm.users.length == 0
+        ? _c("b-alert", { attrs: { show: "", variant: "info" } }, [
+            _vm._v("no users here")
+          ])
+        : _vm._e(),
+      _vm._v(" "),
+      _vm._l(_vm.users, function(user, index) {
+        return _c("b-row", { key: user.id }, [
+          _c(
+            "div",
+            [
+              _c(
+                "b-card",
+                {
+                  staticClass: "mb-2",
+                  staticStyle: { "max-width": "20rem" },
                   attrs: {
-                    src: _vm.$store.getters.url + user.avatar,
-                    rounded: "circle",
-                    width: "75",
-                    heigth: "75",
-                    alt: "Circle image"
+                    title: user.name,
+                    "img-src": _vm.$store.getters.url + user.cover,
+                    "img-alt": "Image",
+                    "img-top": "",
+                    tag: "article",
+                    width: "600",
+                    height: "300"
                   }
-                }),
-                _vm._v(" "),
-                _c(
-                  "b-button",
-                  { attrs: { href: "#", variant: "outline-primary" } },
-                  [_vm._v("follow")]
-                )
-              ],
-              1
-            )
-          ],
-          1
-        )
-      ])
-    }),
-    1
+                },
+                [
+                  _c("b-img", {
+                    attrs: {
+                      src: _vm.$store.getters.url + user.avatar,
+                      rounded: "circle",
+                      width: "75",
+                      heigth: "75",
+                      alt: "Circle image"
+                    }
+                  }),
+                  _vm._v(" "),
+                  _c(
+                    "b-button",
+                    {
+                      attrs: { href: "#", variant: "outline-danger" },
+                      on: {
+                        click: function($event) {
+                          return _vm.unfollow(user.id, index)
+                        }
+                      }
+                    },
+                    [_vm._v("unfollow")]
+                  )
+                ],
+                1
+              )
+            ],
+            1
+          )
+        ])
+      })
+    ],
+    2
   )
 }
 var staticRenderFns = []
@@ -64714,6 +65430,12 @@ var render = function() {
                 _c("div", [_vm._v("following")]),
                 _vm._v(" "),
                 _c("div", [_vm._v(_vm._s(_vm.UserStatistic.following))])
+              ]),
+              _vm._v(" "),
+              _c("b-col", [
+                _c("div", [_vm._v("Replies")]),
+                _vm._v(" "),
+                _c("div", [_vm._v(_vm._s(_vm.UserStatistic.replies))])
               ])
             ],
             1
@@ -64761,7 +65483,13 @@ var render = function() {
         _c("h5", [_vm._v("Who to follow")])
       ]),
       _vm._v(" "),
-      _vm._l(_vm.suggestUser, function(user) {
+      _vm.suggestUser.length == 0
+        ? _c("b-alert", { attrs: { show: "", variant: "info" } }, [
+            _vm._v("no suggested Users")
+          ])
+        : _vm._e(),
+      _vm._v(" "),
+      _vm._l(_vm.suggestUser, function(user, index) {
         return _c(
           "b-row",
           { key: user.id },
@@ -64797,7 +65525,7 @@ var render = function() {
                     },
                     on: {
                       click: function($event) {
-                        return _vm.follow(user.id)
+                        return _vm.follow(user.id, index)
                       }
                     }
                   },
@@ -64842,9 +65570,16 @@ var render = function() {
     ? _c(
         "b-container",
         [
-          _vm._l(_vm.tweets, function(tweet) {
+          _vm.tweets.length == 0
+            ? _c("b-alert", { attrs: { show: "", variant: "info" } }, [
+                _vm._v("no tweets")
+              ])
+            : _vm._e(),
+          _vm._v(" "),
+          _vm._l(_vm.tweets, function(tweet, index) {
             return _c(
               "div",
+              { key: index },
               [
                 _c("br"),
                 _vm._v(" "),
@@ -65033,12 +65768,18 @@ var render = function() {
                       [
                         _c(
                           "b-button",
-                          { attrs: { variant: "outline-primary", size: "sm" } },
+                          {
+                            attrs: {
+                              disabled: "",
+                              variant: "outline-primary",
+                              size: "sm"
+                            }
+                          },
                           [
                             _c("i", { staticClass: "material-icons" }, [
                               _vm._v("comment")
                             ]),
-                            _vm._v("(5)\n          ")
+                            _vm._v("(5)\n        ")
                           ]
                         )
                       ],
@@ -65066,6 +65807,27 @@ var render = function() {
                             }
                           },
                           [_c("i", { staticClass: "fas fa-exchange-alt" })]
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "b-button",
+                          {
+                            directives: [
+                              {
+                                name: "show",
+                                rawName: "v-show",
+                                value: _vm.show_remove,
+                                expression: "show_remove"
+                              }
+                            ],
+                            attrs: { variant: "outline-primary", size: "sm" },
+                            on: {
+                              click: function($event) {
+                                return _vm.removeTweet(tweet.id, index)
+                              }
+                            }
+                          },
+                          [_c("i", { staticClass: "fa fa-times" })]
                         )
                       ],
                       1
@@ -81819,15 +82581,17 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _editProfile_vue_vue_type_template_id_1b1e7b78___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./editProfile.vue?vue&type=template&id=1b1e7b78& */ "./resources/js/components/myapp/parts/subparts/editProfile.vue?vue&type=template&id=1b1e7b78&");
-/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+/* harmony import */ var _editProfile_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./editProfile.vue?vue&type=script&lang=js& */ "./resources/js/components/myapp/parts/subparts/editProfile.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
 
-var script = {}
+
+
 
 
 /* normalize component */
 
-var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_1__["default"])(
-  script,
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _editProfile_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
   _editProfile_vue_vue_type_template_id_1b1e7b78___WEBPACK_IMPORTED_MODULE_0__["render"],
   _editProfile_vue_vue_type_template_id_1b1e7b78___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
   false,
@@ -81841,6 +82605,20 @@ var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_
 if (false) { var api; }
 component.options.__file = "resources/js/components/myapp/parts/subparts/editProfile.vue"
 /* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/myapp/parts/subparts/editProfile.vue?vue&type=script&lang=js&":
+/*!***********************************************************************************************!*\
+  !*** ./resources/js/components/myapp/parts/subparts/editProfile.vue?vue&type=script&lang=js& ***!
+  \***********************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_editProfile_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../../../node_modules/babel-loader/lib??ref--4-0!../../../../../../node_modules/vue-loader/lib??vue-loader-options!./editProfile.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/myapp/parts/subparts/editProfile.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_editProfile_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
 
 /***/ }),
 
@@ -82494,7 +83272,7 @@ __webpack_require__.r(__webpack_exports__);
         });
       });
     },
-    DestroyFollowers: function DestroyFollowers(_ref5, data) {
+    unFollow: function unFollow(_ref5, data) {
       var _this5 = this;
 
       var commit = _ref5.commit;
@@ -82624,36 +83402,48 @@ __webpack_require__.r(__webpack_exports__);
         });
       });
     },
-    StoreReply: function StoreReply(_ref2, data) {
+    myReply: function myReply(_ref2, data) {
       var _this2 = this;
 
       var commit = _ref2.commit;
       return new Promise(function (resolve, reject) {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a.post(_this2.getters.url + "api/reply", data).then(function (res) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this2.getters.url + "api/myReplies").then(function (res) {
           resolve(res);
         })["catch"](function (err) {
           reject(err);
         });
       });
     },
-    DestroyReply: function DestroyReply(_ref3, data) {
+    StoreReply: function StoreReply(_ref3, data) {
       var _this3 = this;
 
       var commit = _ref3.commit;
       return new Promise(function (resolve, reject) {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a["delete"](_this3.getters.url + "api/reply/".concat(data.id)).then(function (res) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.post(_this3.getters.url + "api/reply", data).then(function (res) {
           resolve(res);
         })["catch"](function (err) {
           reject(err);
         });
       });
     },
-    UpdateReply: function UpdateReply(_ref4, data) {
+    DestroyReply: function DestroyReply(_ref4, data) {
       var _this4 = this;
 
       var commit = _ref4.commit;
       return new Promise(function (resolve, reject) {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a.put(_this4.getters.url + "api/reply/".concat(data.id), data).then(function (res) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a["delete"](_this4.getters.url + "api/reply/".concat(data.id)).then(function (res) {
+          resolve(res);
+        })["catch"](function (err) {
+          reject(err);
+        });
+      });
+    },
+    UpdateReply: function UpdateReply(_ref5, data) {
+      var _this5 = this;
+
+      var commit = _ref5.commit;
+      return new Promise(function (resolve, reject) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.put(_this5.getters.url + "api/reply/".concat(data.id), data).then(function (res) {
           resolve(res);
         })["catch"](function (err) {
           reject(err);
@@ -82679,15 +83469,36 @@ __webpack_require__.r(__webpack_exports__);
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   namespaced: true,
-  state: {},
-  getters: {},
-  mutations: {},
+  state: {
+    searchResult: [],
+    isSearch: false
+  },
+  getters: {
+    searchData: function searchData(state) {
+      return state.searchResult;
+    },
+    isSearch: function isSearch(state) {
+      return state.isSearch;
+    }
+  },
+  mutations: {
+    setSearchData: function setSearchData(state, payload) {
+      state.searchResult = payload;
+    },
+    setIfISearch: function setIfISearch(state, payload) {
+      state.isSearch = payload;
+    }
+  },
   actions: {
-    //
-    tweetsTag: function tweetsTag(_ref, data) {
+    // setSearchFinished
+    setSearchFinished: function setSearchFinished(_ref, data) {
+      var commit = _ref.commit;
+      commit('setIfISearch', data);
+    },
+    tweetsTag: function tweetsTag(_ref2, data) {
       var _this = this;
 
-      var commit = _ref.commit;
+      var commit = _ref2.commit;
       return new Promise(function (resolve, reject) {
         axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this.getters.url + "api/tweetsTag/".concat(data.text)).then(function (res) {
           resolve(res);
@@ -82696,84 +83507,98 @@ __webpack_require__.r(__webpack_exports__);
         });
       });
     },
-    TagsData: function TagsData(_ref2, data) {
+    searchTweet: function searchTweet(_ref3, data) {
       var _this2 = this;
-
-      var commit = _ref2.commit;
-      return new Promise(function (resolve, reject) {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this2.getters.url + "api/TagsData").then(function (res) {
-          resolve(res);
-        })["catch"](function (err) {
-          reject(err);
-        });
-      });
-    },
-    myTweets: function myTweets(_ref3, data) {
-      var _this3 = this;
 
       var commit = _ref3.commit;
       return new Promise(function (resolve, reject) {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this3.getters.url + "api/myTweets").then(function (res) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this2.getters.url + "api/searchTweet/".concat(data.text)).then(function (res) {
+          commit('setSearchData', res.data);
+          commit('setIfISearch', true);
           resolve(res);
         })["catch"](function (err) {
           reject(err);
         });
       });
     },
-    likeOrDisLike: function likeOrDisLike(_ref4, data) {
-      var _this4 = this;
+    TagsData: function TagsData(_ref4, data) {
+      var _this3 = this;
 
       var commit = _ref4.commit;
       return new Promise(function (resolve, reject) {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a.post(_this4.getters.url + "api/likeOrDisLike/".concat(data.tweetID)).then(function (res) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this3.getters.url + "api/TagsData").then(function (res) {
           resolve(res);
         })["catch"](function (err) {
           reject(err);
         });
       });
     },
-    allTweets: function allTweets(_ref5, data) {
-      var _this5 = this;
+    myTweets: function myTweets(_ref5, data) {
+      var _this4 = this;
 
       var commit = _ref5.commit;
       return new Promise(function (resolve, reject) {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this5.getters.url + "api/tweets").then(function (res) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this4.getters.url + "api/myTweets").then(function (res) {
           resolve(res);
         })["catch"](function (err) {
           reject(err);
         });
       });
     },
-    tweetsFromFollowing: function tweetsFromFollowing(_ref6, data) {
-      var _this6 = this;
+    likeOrDisLike: function likeOrDisLike(_ref6, data) {
+      var _this5 = this;
 
       var commit = _ref6.commit;
       return new Promise(function (resolve, reject) {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this6.getters.url + "api/tweetsFromFollowing").then(function (res) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.post(_this5.getters.url + "api/likeOrDisLike/".concat(data.tweetID)).then(function (res) {
           resolve(res);
         })["catch"](function (err) {
           reject(err);
         });
       });
     },
-    StoreTweets: function StoreTweets(_ref7, data) {
-      var _this7 = this;
+    allTweets: function allTweets(_ref7, data) {
+      var _this6 = this;
 
       var commit = _ref7.commit;
       return new Promise(function (resolve, reject) {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a.post(_this7.getters.url + "api/tweets", data).then(function (res) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this6.getters.url + "api/tweets").then(function (res) {
           resolve(res);
         })["catch"](function (err) {
           reject(err);
         });
       });
     },
-    DestroyTweets: function DestroyTweets(_ref8, data) {
-      var _this8 = this;
+    tweetsFromFollowing: function tweetsFromFollowing(_ref8, data) {
+      var _this7 = this;
 
       var commit = _ref8.commit;
       return new Promise(function (resolve, reject) {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a["delete"](_this8.getters.url + "api/tweets/".concat(data.id)).then(function (res) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.get(_this7.getters.url + "api/tweetsFromFollowing").then(function (res) {
+          resolve(res);
+        })["catch"](function (err) {
+          reject(err);
+        });
+      });
+    },
+    StoreTweets: function StoreTweets(_ref9, data) {
+      var _this8 = this;
+
+      var commit = _ref9.commit;
+      return new Promise(function (resolve, reject) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.post(_this8.getters.url + "api/tweets", data).then(function (res) {
+          resolve(res);
+        })["catch"](function (err) {
+          reject(err);
+        });
+      });
+    },
+    DestroyTweets: function DestroyTweets(_ref10, data) {
+      var _this9 = this;
+
+      var commit = _ref10.commit;
+      return new Promise(function (resolve, reject) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a["delete"](_this9.getters.url + "api/tweets/".concat(data.id)).then(function (res) {
           resolve(res);
         })["catch"](function (err) {
           reject(err);
@@ -82950,12 +83775,7 @@ __webpack_require__.r(__webpack_exports__);
 
       var commit = _ref9.commit;
       return new Promise(function (resolve, reject) {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a.post(_this8.getters.url + "api/profile", data, {
-          header: {
-            Accept: "application/json",
-            "Content-Type": "multipart/form-data"
-          }
-        }).then(function (res) {
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.put(_this8.getters.url + "api/profile", data).then(function (res) {
           commit('setCurrentUser', res.data.user);
           commit('setAuth', res.data.success);
           resolve(res);
@@ -82976,7 +83796,7 @@ __webpack_require__.r(__webpack_exports__);
         });
       });
     },
-    DestroyUsers: function DestroyUsers(_ref11, data) {
+    DestroyUser: function DestroyUser(_ref11, data) {
       var _this10 = this;
 
       var commit = _ref11.commit;
@@ -82988,12 +83808,19 @@ __webpack_require__.r(__webpack_exports__);
         });
       });
     },
-    UpdateUsers: function UpdateUsers(_ref12, data) {
+    UpdateUser: function UpdateUser(_ref12, data) {
       var _this11 = this;
 
       var commit = _ref12.commit;
       return new Promise(function (resolve, reject) {
-        axios__WEBPACK_IMPORTED_MODULE_0___default.a.put(_this11.getters.url + "api/Users/".concat(data.id), data).then(function (res) {
+        console.log(data);
+        axios__WEBPACK_IMPORTED_MODULE_0___default.a.post(_this11.getters.url + "api/users/".concat(data.id), data.data, {
+          header: {
+            Accept: "application/json",
+            "Content-Type": "multipart/form-data"
+          }
+        }).then(function (res) {
+          commit('setCurrentUser', res.data.user);
           resolve(res);
         })["catch"](function (err) {
           reject(err);

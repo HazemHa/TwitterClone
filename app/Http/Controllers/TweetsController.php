@@ -16,11 +16,12 @@ class TweetsController extends Controller
     {
         $this->middleware('auth:api');
     }
-    public function likeOrDisLike(Request $request,$tweetID){
+    public function likeOrDisLike(Request $request, $tweetID)
+    {
         $tweet = \App\Tweet::find($tweetID);
         $result = $tweet->toggleLikeBy();
 
-        return response()->json(['result'=>$result],200);
+        return response()->json(['result' => $result], 200);
     }
 
     public function index(Request $request)
@@ -36,13 +37,19 @@ class TweetsController extends Controller
         $part1 = $replies->merge($tweetsR);
         $tweets = $related->merge($part1);
 
-        return response()->json(['tweets' => $tweets],200);
+        return response()->json(['tweets' => $tweets], 200);
     }
 
     public function tweetsTag($text)
     {
-           $data = Tag::where('body',$text)->first()->tweets;
-           return TweetsResource::collection($data);
+        $data = Tag::where('body', $text)->first()->tweets;
+        return TweetsResource::collection($data);
+    }
+
+    public function myReplies()
+    {
+        $replies =  ReplyResource::collection(\Auth::user()->replies);
+        return response()->json(['tweets' => $replies], 200);
     }
 
 
@@ -53,10 +60,11 @@ class TweetsController extends Controller
             ->get();
     }
 
-    public function contentTweet($body)
+    public function SearchByContentTweet($text)
     {
+        $modify =  str_replace("-"," ",$text);
         return \App\Tweet::query()
-            ->where('body', 'LIKE', "%{$body}%")
+            ->where('body', 'LIKE', "%{$modify}%")
             ->get();
     }
 
@@ -83,13 +91,15 @@ class TweetsController extends Controller
 
         $collection = \App\Tag::all();
         $grouped = $collection->map(function ($item, $key) {
-            return ['name'=>$item->body,'count'=> count($item->tweets)];
+            return ['name' => $item->body, 'count' => count($item->tweets)];
         });
         $sorted = $grouped->sortByDesc(function ($value) {
             return $value['count'];
         });
-        return response()->json(['data' => $sorted->take(7)], 200);
-
+        $filtered = $sorted->filter(function ($value) {
+            return $value["count"] > 0;
+        });
+        return response()->json(['data' => $filtered->take(7)], 200);
     }
     public function store(Request $request)
     {
@@ -103,11 +113,11 @@ class TweetsController extends Controller
         $newRecord->body = $request->body;
         $newRecord->user_id = \Auth::user()->id;
         if ($haveTag) {
-            $tag = Tag::firstOrCreate(['body'=>$tagBody[1]]);
+            $tag = Tag::firstOrCreate(['body' => $tagBody[1]]);
             $newRecord->tag_id = $tag->id;
         }
         $result = $newRecord->save();
-        return response()->json(['tweet'=>new TweetsResource($newRecord),'success'=>true]);
+        return response()->json(['tweet' => new TweetsResource($newRecord), 'success' => true]);
     }
 
     // this for update record :
@@ -148,8 +158,8 @@ Remove the specified resource from storage.*
     {
         if (!\Auth::check()) return $this->AuthorizedUser($request);
         try {
-            $record = App\Tweet::findOrFail($id);
-            $result =  App\Tweet::destroy($record->id);
+            $record = Tweet::findOrFail($id);
+            $result =  Tweet::destroy($record->id);
         } catch (ModelNotFoundException $e) {
             return ['error' => 'there are no data for this record '];
         }

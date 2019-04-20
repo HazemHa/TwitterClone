@@ -1,17 +1,52 @@
 import axios from "axios"
 export default {
     namespaced: true,
-    state: {},
-    getters: {},
-    mutations: {},
-    actions: { //
-
+    state: {
+        searchResult:[],
+        isSearch:false,
+    },
+    getters: {
+        searchData(state){
+            return state.searchResult;
+        },
+        isSearch(state){
+            return state.isSearch;
+        }
+    },
+    mutations: {
+        setSearchData(state,payload){
+            state.searchResult = payload;
+        },
+        setIfISearch(state,payload){
+            state.isSearch = payload;
+        }
+    },
+    actions: { // setSearchFinished
+        setSearchFinished({
+            commit
+        }, data) {
+          commit('setIfISearch',data);
+        },
         tweetsTag({
             commit
         }, data) {
             return new Promise((resolve, reject) => {
                 axios.get(this.getters.url + `api/tweetsTag/${data.text}`)
                     .then((res) => {
+                        resolve(res);
+                    }).catch((err) => {
+                        reject(err);
+                    })
+            })
+        },
+        searchTweet({
+            commit
+        }, data) {
+            return new Promise((resolve, reject) => {
+                axios.get(this.getters.url + `api/searchTweet/${data.text}`)
+                    .then((res) => {
+                        commit('setSearchData',res.data);
+                        commit('setIfISearch',true);
                         resolve(res);
                     }).catch((err) => {
                         reject(err);

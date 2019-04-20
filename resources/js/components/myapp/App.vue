@@ -1,6 +1,6 @@
 <template>
   <b-container class="bv-example-row">
-    <TobAppBar v-if="$store.getters['users/isAuth']"></TobAppBar>
+    <TobAppBar  v-if="$store.getters['users/isAuth']"></TobAppBar>
     <b-row>
       <b-col cols="4" v-if="$store.getters['users/isAuth']">
         <previewInfo :UserStatistic="UserStatistic" v-if="$store.getters['users/isAuth']"></previewInfo>
@@ -35,7 +35,7 @@ export default {
     return {
       tags: [],
       suggestUser: [],
-      UserStatistic: { tweets: 0, followers: 0, following: 0 }
+      UserStatistic: { tweets: 0, followers: 0, following: 0, replies: 0 }
     };
   },
   methods: {
@@ -43,7 +43,7 @@ export default {
       this.$store
         .dispatch("tweets/TagsData")
         .then(res => {
-            this.tags = res.data.data;
+          this.tags = res.data.data;
           this.$router.push({ name: "home" });
         })
         .catch(err => {});
@@ -55,9 +55,9 @@ export default {
           this.UserStatistic = res.data;
         })
         .catch(err => {
-            if(err.response.data.message.includes("Unauthenticated")){
-                this.$router.push({name:'login'})
-            }
+          if (err.response.data.message.includes("Unauthenticated")) {
+            this.$router.push({ name: "login" });
+          }
         });
     },
     fetchSuggestionsUser() {
@@ -70,18 +70,16 @@ export default {
     }
   },
   created() {
-
     this.$store
       .dispatch("users/setTokenForRequest")
       .then(res => {
-          console.log(res);
+        console.log(res);
         this.$router.push({ name: "home" });
         this.fetchUserInfo();
         this.fetchSuggestionsUser();
         this.fetchTags();
       })
       .catch(err => {});
-
   }
 };
 </script>

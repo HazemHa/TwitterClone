@@ -161,12 +161,7 @@ export default {
         }, data) {
             return new Promise((resolve, reject) => {
                 axios
-                    .post(this.getters.url + `api/profile`, data, {
-                        header: {
-                            Accept: "application/json",
-                            "Content-Type": "multipart/form-data"
-                        }
-                    })
+                    .put(this.getters.url + `api/profile`, data)
                     .then(res => {
                         commit('setCurrentUser', res.data.user);
                         commit('setAuth', res.data.success);
@@ -190,7 +185,7 @@ export default {
                     })
             })
         },
-        DestroyUsers({
+        DestroyUser({
             commit
         }, data) {
             return new Promise((resolve, reject) => {
@@ -202,12 +197,19 @@ export default {
                     })
             })
         },
-        UpdateUsers({
+        UpdateUser({
             commit
         }, data) {
             return new Promise((resolve, reject) => {
-                axios.put(this.getters.url + `api/Users/${data.id}`, data)
+                console.log(data);
+                axios.post(this.getters.url + `api/users/${data.id}`, data.data,{
+                    header: {
+                        Accept: "application/json",
+                        "Content-Type": "multipart/form-data"
+                    }
+                })
                     .then((res) => {
+                        commit('setCurrentUser', res.data.user);
                         resolve(res);
                     }).catch((err) => {
                         reject(err);

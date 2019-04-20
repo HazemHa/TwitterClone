@@ -1,6 +1,8 @@
 <template>
   <b-container>
-    <b-row v-for="user in users" :key="user.id">
+    <b-alert v-if="users.length == 0" show variant="info">no users here</b-alert>
+
+    <b-row v-for="(user,index) in users" :key="user.id">
       <div>
         <b-card
           :title="user.name"
@@ -13,14 +15,14 @@
           style="max-width: 20rem;"
           class="mb-2"
         >
-         <b-img
-        :src="$store.getters.url+user.avatar"
-        rounded="circle"
-        width="75"
-        heigth="75"
-        alt="Circle image"
-      ></b-img>
-          <b-button href="#"  variant="outline-primary">follow</b-button>
+          <b-img
+            :src="$store.getters.url+user.avatar"
+            rounded="circle"
+            width="75"
+            heigth="75"
+            alt="Circle image"
+          ></b-img>
+          <b-button href="#" variant="outline-danger" @click="unfollow(user.id,index)">unfollow</b-button>
         </b-card>
       </div>
     </b-row>
@@ -28,6 +30,21 @@
 </template>
 <script>
 export default {
-    props:['users'],
+  props: ["users", "type"],
+  created() {},
+  methods: {
+    unfollow(id, index) {
+      this.$store
+        .dispatch("followers/unFollow", { id: id })
+        .then(res => {
+          this.users.splice(index, 1);
+          this.$emit("removeUser", this.type);
+          this.$toaster.success(res.data.success);
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    }
+  }
 };
 </script>

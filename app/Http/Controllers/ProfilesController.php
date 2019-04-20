@@ -27,13 +27,15 @@ class ProfilesController extends Controller
         $CountTweets = count(\Auth::user()->tweets);
         $CountFollowers = count(\Auth::user()->followers);
         $CountFollowing = count(\Auth::user()->following);
+        $CountReplies  = count(\Auth::user()->replies);
 
 
         return response()->json(
             [
                 'tweets' => $CountTweets,
                 'followers' => $CountFollowers,
-                'following' => $CountFollowing
+                'following' => $CountFollowing,
+                'replies' => $CountReplies,
             ],
             200
         );

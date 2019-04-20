@@ -26,8 +26,7 @@ class UsersController extends Controller
 
     public function myFuncitonUnderTest(Request $request)
     {
-        return response()->json(['a'=>\Auth::user()->following->where('id',3)->first()->name]);
-
+        return response()->json(['a' => \Auth::user()->following->where('id', 3)->first()->name]);
     }
     public function UserFoRSuggestions(Request $request)
     {
@@ -122,35 +121,32 @@ Update the specified resource in storage.**
      */
     public function update(Request $request, $id)
     {
-
         $validatedData = $request->validate([
             'name' => 'required',
             'username' => 'required',
             'email' => 'required',
-            'cover' => 'required',
-            'avatar' => 'required',
             'password' => 'required'
         ]);
-
-        $UpdatedRecord = App\Users::find($id);
-        $UpdatedRecord->name = $request->name;
-        $UpdatedRecord->username = $request->username;
-        $UpdatedRecord->email = $request->email;
-        $date = date_create();
-        $timestamp = date_timestamp_get($date);
+        $user =User::find($id);
+        $user->name = $request->name;
+        $user->username = $request->username;
+        $user->email = $request->email;
         if ($request->hasFile('cover')) {
             $nameFile = $request->file('cover')->getClientOriginalName();
             $path = $request->cover->storeAs('images/cover', $timestamp . "_" . $nameFile);
-            $newRecord->cover = $path;
+            $user->cover = $path;
         }
         if ($request->hasFile('avatar')) {
             $nameFile = $request->file('avatar')->getClientOriginalName();
             $path = $request->avatar->storeAs('images/avatar', $timestamp . "_" . $nameFile);
-            $newRecord->avatar = $path;
+            $user->avatar = $path;
         }
-        $UpdatedRecord->password = bcrypt($request->password);
-        $result = $UpdatedRecord->save();
-        return $this->createResponseMessage($result);
+        $user->password = bcrypt($request->password);
+        $result = $user->save();
+        if ($result) {
+            return response()->json(['user' => $user, 'update' => true], 200);
+        }
+        return response()->json(['user' => null, 'update' => false], 200);
     }
 
     // this for destroy record :

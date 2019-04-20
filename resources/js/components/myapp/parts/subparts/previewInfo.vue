@@ -35,8 +35,8 @@
       </b-row>
 
       <b-row id="userstatistics">
-          <br>
-          <br>
+        <br>
+        <br>
         <b-col>
           <div>tweets</div>
           <div>{{UserStatistic.tweets}}</div>
@@ -49,16 +49,19 @@
           <div>following</div>
           <div>{{UserStatistic.following}}</div>
         </b-col>
+        <b-col>
+          <div>Replies</div>
+          <div>{{UserStatistic.replies}}</div>
+        </b-col>
       </b-row>
       <br>
       <br>
-
     </b-row>
   </b-container>
 </template>
 <script>
 export default {
-    props:['UserStatistic'],
+  props: ["UserStatistic"]
 };
 </script>
 <style>
@@ -70,8 +73,8 @@ export default {
   position: absolute;
   top: 0px;
 }
-#userstatistics{
-    padding-top: 15%;
+#userstatistics {
+  padding-top: 15%;
 }
 </style>
 
