@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="$store.getters['users/isAuth']">
+    <div v-if="this.$authLaravel.isAuth()">
       <writeTweet @newTweet="addNewTweet"></writeTweet>
     </div>
     <br>
@@ -24,7 +24,7 @@ export default {
     };
   },
   mounted() {
-      console.log(this.isSearch);
+     // console.log(this.isSearch);
   },
 
   watch: {

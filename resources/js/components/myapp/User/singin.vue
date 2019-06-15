@@ -46,9 +46,7 @@ export default {
     };
   },
 
- created() {
-
- },
+  created() {},
   methods: {
     onSubmit(evt) {
       evt.preventDefault();
@@ -65,13 +63,32 @@ export default {
       });
     },
     login() {
+      let data = {
+        url: "api/login",
+        email: this.form.email,
+        password: this.form.password
+      };
+
+      this.$authLaravel
+        .login(data)
+        .then(res => {
+            if (res.data.auth) {
+            this.$store.dispatch("users/PutCurrentUser",res.data.user);
+            this.$router.push({ path: "/", name: 'home' });
+            this.$nextTick();
+          }
+        })
+        .catch(err => {
+          if (err.response) this.$toaster.error(err.response.data.message);
+        });
+
+/*
       this.$store
         .dispatch("users/Login", {
           email: this.form.email,
           password: this.form.password
         })
         .then(res => {
-
           if (res.data.auth == true) {
             this.$router.push({ name: "home" });
             this.$nextTick();
@@ -80,9 +97,11 @@ export default {
           }
         })
         .catch(err => {
-            console.log(err);
+          console.log(err);
           if (err.response) this.$toaster.error(err.response.data.message);
         });
+        */
+
     }
   }
 };

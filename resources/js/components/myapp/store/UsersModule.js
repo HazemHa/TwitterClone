@@ -92,6 +92,12 @@ export default {
                     })
             })
         },
+        PutCurrentUser({
+            commit
+        }, data) {
+            commit('setCurrentUser', data);
+            commit('setAuth', true);
+        },
         setTokenForRequest({
             commit
         }, data) {
@@ -128,6 +134,7 @@ export default {
                     .then((res) => {
                         commit('setCurrentUser', res.data.user);
                         $cookies.remove("access_token");
+                        $cookies.remove("user");
                         commit('setAuth', false);
                         resolve(false);
                     }).catch((err) => {
@@ -202,12 +209,12 @@ export default {
         }, data) {
             return new Promise((resolve, reject) => {
                 console.log(data);
-                axios.post(this.getters.url + `api/users/${data.id}`, data.data,{
-                    header: {
-                        Accept: "application/json",
-                        "Content-Type": "multipart/form-data"
-                    }
-                })
+                axios.post(this.getters.url + `api/users/${data.id}`, data.data, {
+                        header: {
+                            Accept: "application/json",
+                            "Content-Type": "multipart/form-data"
+                        }
+                    })
                     .then((res) => {
                         commit('setCurrentUser', res.data.user);
                         resolve(res);

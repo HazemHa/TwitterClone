@@ -6,7 +6,7 @@
           <b-img
             thumbnail
             fluid
-            :src="$store.getters.url+$store.getters['users/getCurrentUser'].cover"
+            :src="$store.getters.url+'storage/'+$store.getters['users/getCurrentUser'].cover"
             width="160px"
             height="160px"
             alt="Image 1"
@@ -16,7 +16,7 @@
               <b-img
                 thumbnail
                 rounded="circle"
-                :src="$store.getters.url+$store.getters['users/getCurrentUser'].avatar"
+                :src="$store.getters.url+'storage/'+$store.getters['users/getCurrentUser'].avatar"
                 width="65px"
                 height="65px"
                 alt="Image 2"
@@ -67,14 +67,14 @@ export default {
 <style>
 .ProfoileImage {
   position: relative;
-  top: -25px;
+  top: -15px;
 }
 .infoUser {
   position: absolute;
-  top: 0px;
+  top: 5px;
 }
 #userstatistics {
-  padding-top: 15%;
+  padding-top: 35%;
 }
 </style>
 

@@ -8,7 +8,7 @@
 
     <b-row v-for="(user,index) in suggestUser" :key="user.id">
       <div class="w-100"></div>
-      <b-img :src="$store.getters.url+user.avatar" width="38px" height="38px" rounded="circle" alt="Circle image"></b-img>
+      <b-img :src="$store.getters.url+'storage/'+user.avatar" width="38px" height="38px" rounded="circle" alt="Circle image"></b-img>
       <span>
         <span id="nameUser">{{user.name}}</span>
         <br>

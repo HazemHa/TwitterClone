@@ -15,12 +15,14 @@ import  VueCookie from 'vue-cookies';
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import 'v-toaster/dist/v-toaster.css'
-
+import authLaravel from 'vue-auth-laravel'
 window.Vue = require('vue');
 
+Vue.use(authLaravel);
 Vue.use(BootstrapVue)
 Vue.use(Toaster);
 Vue.use(VueCookie);
+
 
 Vue.component(
     'authorized-clients',

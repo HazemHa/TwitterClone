@@ -1827,13 +1827,14 @@ __webpack_require__.r(__webpack_exports__);
 
       this.$store.dispatch("users/UserStatistic").then(function (res) {
         _this2.UserStatistic = res.data;
-      })["catch"](function (err) {
-        if (err.response.data.message.includes("Unauthenticated")) {
-          _this2.$router.push({
-            name: "login"
-          });
-        }
       });
+      /*  .catch(err => {
+        //    console.log(err)
+           if (err.response.data.message.includes("Unauthenticated")) {
+            this.$router.push({ name: "login" });
+          }
+         });
+        */
     },
     fetchSuggestionsUser: function fetchSuggestionsUser() {
       var _this3 = this;
@@ -1846,19 +1847,39 @@ __webpack_require__.r(__webpack_exports__);
   created: function created() {
     var _this4 = this;
 
-    this.$store.dispatch("users/setTokenForRequest").then(function (res) {
-      console.log(res);
+    this.$authLaravel.setURL("http://127.0.0.1:8000/");
+    this.$authLaravel.checkToken("api/checkMyLogin").then(function (res) {
+      if (res) {
+        var user = $cookies.get("user");
 
-      _this4.$router.push({
-        name: "home"
-      });
+        _this4.$store.dispatch("users/PutCurrentUser", user);
 
-      _this4.fetchUserInfo();
+        _this4.$router.push({
+          path: "/",
+          name: "home"
+        });
 
-      _this4.fetchSuggestionsUser();
+        _this4.fetchUserInfo();
 
-      _this4.fetchTags();
-    })["catch"](function (err) {});
+        _this4.fetchSuggestionsUser();
+
+        _this4.fetchTags();
+
+        _this4.$nextTick();
+      }
+    });
+    /*
+    this.$store
+      .dispatch("users/setTokenForRequest")
+      .then(res => {
+        console.log(res);
+        this.$router.push({ name: "home" });
+        this.fetchUserInfo();
+        this.fetchSuggestionsUser();
+        this.fetchTags();
+      })
+      .catch(err => {});
+      */
   }
 });
 
@@ -1940,23 +1961,44 @@ __webpack_require__.r(__webpack_exports__);
     login: function login() {
       var _this2 = this;
 
-      this.$store.dispatch("users/Login", {
+      var data = {
+        url: "api/login",
         email: this.form.email,
         password: this.form.password
-      }).then(function (res) {
-        if (res.data.auth == true) {
+      };
+      this.$authLaravel.login(data).then(function (res) {
+        if (res.data.auth) {
+          _this2.$store.dispatch("users/PutCurrentUser", res.data.user);
+
           _this2.$router.push({
-            name: "home"
+            path: "/",
+            name: 'home'
           });
 
           _this2.$nextTick();
-        } else {
-          _this2.$toaster.success("Please check form your credentials");
         }
       })["catch"](function (err) {
-        console.log(err);
         if (err.response) _this2.$toaster.error(err.response.data.message);
       });
+      /*
+            this.$store
+              .dispatch("users/Login", {
+                email: this.form.email,
+                password: this.form.password
+              })
+              .then(res => {
+                if (res.data.auth == true) {
+                  this.$router.push({ name: "home" });
+                  this.$nextTick();
+                } else {
+                  this.$toaster.success("Please check form your credentials");
+                }
+              })
+              .catch(err => {
+                console.log(err);
+                if (err.response) this.$toaster.error(err.response.data.message);
+              });
+              */
     }
   }
 });
@@ -2303,8 +2345,7 @@ __webpack_require__.r(__webpack_exports__);
       tweets: []
     };
   },
-  mounted: function mounted() {
-    console.log(this.isSearch);
+  mounted: function mounted() {// console.log(this.isSearch);
   },
   watch: {
     $route: function $route(to, from) {
@@ -2593,12 +2634,16 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       tweet: "",
       textSearch: ""
     };
+  },
+  created: function created() {
+    console.log(this.$store.getters["users/getCurrentUser"]);
   },
   methods: {
     clearTweet: function clearTweet() {
@@ -2631,6 +2676,13 @@ __webpack_require__.r(__webpack_exports__);
         this.handleSubmit();
       }
     },
+    Logout: function Logout() {
+      this.$store.dispatch("users/Logout");
+      this.$router.push({
+        name: "login"
+      });
+      location.reload();
+    },
     handleSubmit: function handleSubmit() {
       var _this = this;
 
@@ -2645,7 +2697,7 @@ __webpack_require__.r(__webpack_exports__);
     deep: true,
     textSearch: function textSearch(oldValue, newValue) {
       if (oldValue == "") {
-        this.$store.dispatch('tweets/setSearchFinished', false);
+        this.$store.dispatch("tweets/setSearchFinished", false);
       }
     }
   }
@@ -32193,7 +32245,7 @@ exports = module.exports = __webpack_require__(/*! ../../../../../../node_module
 
 
 // module
-exports.push([module.i, "\n.ProfoileImage {\n  position: relative;\n  top: -25px;\n}\n.infoUser {\n  position: absolute;\n  top: 0px;\n}\n#userstatistics {\n  padding-top: 15%;\n}\n", ""]);
+exports.push([module.i, "\n.ProfoileImage {\n  position: relative;\n  top: -15px;\n}\n.infoUser {\n  position: absolute;\n  top: 5px;\n}\n#userstatistics {\n  padding-top: 35%;\n}\n", ""]);
 
 // exports
 
@@ -63728,6 +63780,184 @@ if(false) {}
 
 /***/ }),
 
+/***/ "./node_modules/vue-auth-laravel/src/index.js":
+/*!****************************************************!*\
+  !*** ./node_modules/vue-auth-laravel/src/index.js ***!
+  \****************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js");
+/* harmony import */ var vue__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(vue__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var vuex__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! vuex */ "./node_modules/vuex/dist/vuex.esm.js");
+/* harmony import */ var vue_cookies__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! vue-cookies */ "./node_modules/vue-cookies/vue-cookies.js");
+/* harmony import */ var vue_cookies__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(vue_cookies__WEBPACK_IMPORTED_MODULE_2__);
+
+
+//import axios from "axios"
+
+
+
+vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__["default"]);
+//Vue.use(axios);
+vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vue_cookies__WEBPACK_IMPORTED_MODULE_2___default.a);
+
+
+const store = new vuex__WEBPACK_IMPORTED_MODULE_1__["default"].Store({
+    state: {
+        baseURL: "http://" + window.location.hostname + "/",
+        currentUser: {
+            access_token: undefined,
+            id: -1,
+        },
+        auth: false,
+    },
+    getters: {
+        getCurrentUser(state) {
+            return state.currentUser;
+        },
+        isAuth(state) {
+            return state.auth;
+        },
+        baseURL(state) {
+            return state.baseURL;
+        }
+    },
+    mutations: {
+        setCurrentUser(state, payload) {
+            vue_cookies__WEBPACK_IMPORTED_MODULE_2___default.a.set("user", payload);
+            state.currentUser = payload;
+        },
+
+        setAuth(state, payload) {
+            state.auth = payload;
+        },
+        setUrl(state, payload) {
+            state.baseURL = payload;
+        }
+    },
+    actions: {
+        setURL({
+            commit
+        }, data) {
+            return new Promise((resolve, reject) => {
+                commit('setUrl', data);
+                resolve(this.getters.isAuth);
+
+            })
+        },
+        updateIsAuth({
+            commit
+        }, data) {
+            return new Promise((resolve, reject) => {
+                commit('setAuth', data);
+                resolve(his.getters.isAuth);
+
+            })
+        },
+        Login({
+            commit
+        }, data) {
+            return new Promise((resolve, reject) => {
+                axios.post(this.getters.baseURL + data.url, data)
+                    .then((res) => {
+                        if (res.data.auth) {
+                            axios.defaults.headers.common['Authorization'] = "Bearer " + res.data.user.access_token;
+                            commit('setCurrentUser', res.data.user);
+                            commit('setAuth', true);
+                        }
+                        resolve(res);
+                    }).catch((err) => {
+                        reject(err);
+                    })
+            })
+        },
+        setTokenForRequest({
+            commit
+        }, data) {
+            return new Promise((resolve, reject) => {
+                let oldAuth = vue_cookies__WEBPACK_IMPORTED_MODULE_2___default.a.get("user");
+                if (oldAuth && oldAuth.access_token) {
+                    axios.defaults.headers.common['Authorization'] = "Bearer " + oldAuth.access_token;
+                }
+                axios.get(this.getters.baseURL + data.url)
+                    .then(res => {
+                        let authServer = res.data.auth;
+                        commit('setAuth', authServer);
+                        if (authServer) {
+                            commit('setCurrentUser', res.data.user);
+                            axios.defaults.headers.common['Authorization'] = "Bearer " + res.data.user.access_token;
+                        }
+                        resolve(this.getters.isAuth);
+                    }).catch(err => {
+                        commit('setAuth', false);
+                        reject(err);
+                    })
+
+
+            });
+        },
+        Logout({
+            commit
+        }, data) {
+            return new Promise((resolve, reject) => {
+                axios.post(this.getters.baseURL + data.url, data.data)
+                    .then((res) => {
+                        commit('setCurrentUser', res.data.user);
+                        $cookies.remove("access_token");
+                        commit('setAuth', false);
+                        resolve(this.getters.isAuth);
+                    }).catch((err) => {
+                        reject(err);
+                    })
+            })
+        },
+    },
+});
+
+/* harmony default export */ __webpack_exports__["default"] = ({
+    install(Vue, defaultOptions) {
+        Vue.prototype.$authLaravel = this;
+    },
+    login: function (data) {
+        return store.dispatch('Login', data).then(res => {
+            return Promise.resolve(res);
+        }).catch(err => {
+            return Promise.reject(err);
+        });
+    },
+    checkToken: function (url) {
+        return store.dispatch('setTokenForRequest', {
+            url: url
+        }).then(res => {
+            return Promise.resolve(res);
+        }).catch(err => {
+            return Promise.reject(err);
+        })
+    },
+    logout: function (url, data) {
+        return store.dispatch('Logout', {
+            url: url,
+            data: data
+        }).then(res => {
+            return Promise.resolve(res);
+        }).catch(err => {
+            return Promise.reject(err);
+        });
+    },
+    setURL: function (url) {
+        store.dispatch('setURL', url);
+    },
+    isAuth: function () {
+        return store.getters.isAuth;
+    }
+});
+
+
+/***/ }),
+
 /***/ "./node_modules/vue-cookies/vue-cookies.js":
 /*!*************************************************!*\
   !*** ./node_modules/vue-cookies/vue-cookies.js ***!
@@ -63889,17 +64119,17 @@ var render = function() {
     "b-container",
     { staticClass: "bv-example-row" },
     [
-      _vm.$store.getters["users/isAuth"] ? _c("TobAppBar") : _vm._e(),
+      this.$authLaravel.isAuth() ? _c("TobAppBar") : _vm._e(),
       _vm._v(" "),
       _c(
         "b-row",
         [
-          _vm.$store.getters["users/isAuth"]
+          this.$authLaravel.isAuth()
             ? _c(
                 "b-col",
                 { attrs: { cols: "4" } },
                 [
-                  _vm.$store.getters["users/isAuth"]
+                  this.$authLaravel.isAuth()
                     ? _c("previewInfo", {
                         attrs: { UserStatistic: _vm.UserStatistic }
                       })
@@ -63909,7 +64139,7 @@ var render = function() {
                   _vm._v(" "),
                   _c("br"),
                   _vm._v(" "),
-                  _vm.$store.getters["users/isAuth"]
+                  this.$authLaravel.isAuth()
                     ? _c("suggestions", {
                         attrs: { suggestUser: _vm.suggestUser }
                       })
@@ -63919,7 +64149,7 @@ var render = function() {
                   _vm._v(" "),
                   _c("br"),
                   _vm._v(" "),
-                  _vm.$store.getters["users/isAuth"]
+                  this.$authLaravel.isAuth()
                     ? _c("listOfTag", { attrs: { tags: _vm.tags } })
                     : _vm._e()
                 ],
@@ -64469,7 +64699,7 @@ var render = function() {
   return _c(
     "div",
     [
-      _vm.$store.getters["users/isAuth"]
+      this.$authLaravel.isAuth()
         ? _c(
             "div",
             [_c("writeTweet", { on: { newTweet: _vm.addNewTweet } })],
@@ -64750,6 +64980,7 @@ var render = function() {
                   rounded: "circle",
                   src:
                     _vm.$store.getters.url +
+                    "storage/" +
                     _vm.$store.getters["users/getCurrentUser"].avatar,
                   alt: "Image 2",
                   width: "55",
@@ -64764,6 +64995,15 @@ var render = function() {
             "b-col",
             { attrs: { cols: "1" } },
             [
+              _c(
+                "b-button",
+                {
+                  attrs: { href: "#", size: "sm", variant: "outline-primary" },
+                  on: { click: _vm.Logout }
+                },
+                [_vm._v("Logout")]
+              ),
+              _vm._v(" "),
               _c(
                 "b-button",
                 {
@@ -65261,7 +65501,7 @@ var render = function() {
                   staticStyle: { "max-width": "20rem" },
                   attrs: {
                     title: user.name,
-                    "img-src": _vm.$store.getters.url + user.cover,
+                    "img-src": _vm.$store.getters.url + "storage/" + user.cover,
                     "img-alt": "Image",
                     "img-top": "",
                     tag: "article",
@@ -65272,7 +65512,7 @@ var render = function() {
                 [
                   _c("b-img", {
                     attrs: {
-                      src: _vm.$store.getters.url + user.avatar,
+                      src: _vm.$store.getters.url + "storage/" + user.avatar,
                       rounded: "circle",
                       width: "75",
                       heigth: "75",
@@ -65344,6 +65584,7 @@ var render = function() {
                       fluid: "",
                       src:
                         _vm.$store.getters.url +
+                        "storage/" +
                         _vm.$store.getters["users/getCurrentUser"].cover,
                       width: "160px",
                       height: "160px",
@@ -65362,6 +65603,7 @@ var render = function() {
                             rounded: "circle",
                             src:
                               _vm.$store.getters.url +
+                              "storage/" +
                               _vm.$store.getters["users/getCurrentUser"].avatar,
                             width: "65px",
                             height: "65px",
@@ -65498,7 +65740,7 @@ var render = function() {
             _vm._v(" "),
             _c("b-img", {
               attrs: {
-                src: _vm.$store.getters.url + user.avatar,
+                src: _vm.$store.getters.url + "storage/" + user.avatar,
                 width: "38px",
                 height: "38px",
                 rounded: "circle",
@@ -65603,6 +65845,7 @@ var render = function() {
                                   tweet.tweet.user == undefined
                                     ? ""
                                     : _vm.$store.getters.url +
+                                      "storage/" +
                                       tweet.tweet.user.avatar,
                                 alt: "Image 2",
                                 width: "45px",
@@ -65663,6 +65906,7 @@ var render = function() {
                                       tweet.user == undefined
                                         ? ""
                                         : _vm.$store.getters.url +
+                                          "storage/" +
                                           tweet.user.avatar,
                                     alt: "Image 2",
                                     width: "45px",
@@ -65722,7 +65966,9 @@ var render = function() {
                             src:
                               tweet.user == undefined
                                 ? ""
-                                : _vm.$store.getters.url + tweet.user.avatar,
+                                : _vm.$store.getters.url +
+                                  "storage/" +
+                                  tweet.user.avatar,
                             alt: "Image 2",
                             width: "45px",
                             height: "45px",
@@ -65942,6 +66188,7 @@ var render = function() {
             attrs: {
               src:
                 _vm.$store.getters.url +
+                "storage/" +
                 _vm.$store.getters["users/getCurrentUser"].avatar,
               rounded: "circle",
               width: "45px",
@@ -81935,6 +82182,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var bootstrap_vue_dist_bootstrap_vue_css__WEBPACK_IMPORTED_MODULE_8___default = /*#__PURE__*/__webpack_require__.n(bootstrap_vue_dist_bootstrap_vue_css__WEBPACK_IMPORTED_MODULE_8__);
 /* harmony import */ var v_toaster_dist_v_toaster_css__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! v-toaster/dist/v-toaster.css */ "./node_modules/v-toaster/dist/v-toaster.css");
 /* harmony import */ var v_toaster_dist_v_toaster_css__WEBPACK_IMPORTED_MODULE_9___default = /*#__PURE__*/__webpack_require__.n(v_toaster_dist_v_toaster_css__WEBPACK_IMPORTED_MODULE_9__);
+/* harmony import */ var vue_auth_laravel__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! vue-auth-laravel */ "./node_modules/vue-auth-laravel/src/index.js");
 /**
  * First we will load all of this project's JavaScript dependencies which
  * includes Vue and other libraries. It is a great starting point when
@@ -81952,7 +82200,9 @@ __webpack_require__(/*! ./bootstrap */ "./resources/js/bootstrap.js");
 
 
 
+
 window.Vue = __webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.common.js");
+vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vue_auth_laravel__WEBPACK_IMPORTED_MODULE_10__["default"]);
 vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(bootstrap_vue__WEBPACK_IMPORTED_MODULE_1___default.a);
 vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(v_toaster__WEBPACK_IMPORTED_MODULE_2___default.a);
 vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vue_cookies__WEBPACK_IMPORTED_MODULE_6___default.a);
@@ -83135,13 +83385,11 @@ __webpack_require__.r(__webpack_exports__);
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _store__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../store */ "./resources/js/components/myapp/store/index.js");
-
 /* harmony default export */ __webpack_exports__["default"] = (function (to, from, next) {
   // check if user Auth continu request
   // else convert to login page. .
   // it is like middleware for specific component
-  if (_store__WEBPACK_IMPORTED_MODULE_0__["default"].getters['users/isAuth']) {
+  if (Vue.prototype.$authLaravel.isAuth()) {
     next();
   } else {
     next('/login');
@@ -83712,10 +83960,15 @@ __webpack_require__.r(__webpack_exports__);
         });
       });
     },
-    setTokenForRequest: function setTokenForRequest(_ref6, data) {
+    PutCurrentUser: function PutCurrentUser(_ref6, data) {
+      var commit = _ref6.commit;
+      commit('setCurrentUser', data);
+      commit('setAuth', true);
+    },
+    setTokenForRequest: function setTokenForRequest(_ref7, data) {
       var _this5 = this;
 
-      var commit = _ref6.commit;
+      var commit = _ref7.commit;
       return new Promise(function (resolve, reject) {
         var accessToken = $cookies.get("user").access_token;
         var user = $cookies.get('user');
@@ -83736,14 +83989,15 @@ __webpack_require__.r(__webpack_exports__);
         });
       });
     },
-    Logout: function Logout(_ref7, data) {
+    Logout: function Logout(_ref8, data) {
       var _this6 = this;
 
-      var commit = _ref7.commit;
+      var commit = _ref8.commit;
       return new Promise(function (resolve, reject) {
         axios__WEBPACK_IMPORTED_MODULE_0___default.a.post(_this6.getters.url + "api/logout").then(function (res) {
           commit('setCurrentUser', res.data.user);
           $cookies.remove("access_token");
+          $cookies.remove("user");
           commit('setAuth', false);
           resolve(false);
         })["catch"](function (err) {
@@ -83751,10 +84005,10 @@ __webpack_require__.r(__webpack_exports__);
         });
       });
     },
-    singup: function singup(_ref8, data) {
+    singup: function singup(_ref9, data) {
       var _this7 = this;
 
-      var commit = _ref8.commit;
+      var commit = _ref9.commit;
       return new Promise(function (resolve, reject) {
         axios__WEBPACK_IMPORTED_MODULE_0___default.a.post(_this7.getters.url + "api/users", data, {
           header: {
@@ -83770,10 +84024,10 @@ __webpack_require__.r(__webpack_exports__);
         });
       });
     },
-    updateProfile: function updateProfile(_ref9, data) {
+    updateProfile: function updateProfile(_ref10, data) {
       var _this8 = this;
 
-      var commit = _ref9.commit;
+      var commit = _ref10.commit;
       return new Promise(function (resolve, reject) {
         axios__WEBPACK_IMPORTED_MODULE_0___default.a.put(_this8.getters.url + "api/profile", data).then(function (res) {
           commit('setCurrentUser', res.data.user);
@@ -83784,10 +84038,10 @@ __webpack_require__.r(__webpack_exports__);
         });
       });
     },
-    StoreUsers: function StoreUsers(_ref10, data) {
+    StoreUsers: function StoreUsers(_ref11, data) {
       var _this9 = this;
 
-      var commit = _ref10.commit;
+      var commit = _ref11.commit;
       return new Promise(function (resolve, reject) {
         axios__WEBPACK_IMPORTED_MODULE_0___default.a.post(_this9.getters.url + "api/Users", data).then(function (res) {
           resolve(res);
@@ -83796,10 +84050,10 @@ __webpack_require__.r(__webpack_exports__);
         });
       });
     },
-    DestroyUser: function DestroyUser(_ref11, data) {
+    DestroyUser: function DestroyUser(_ref12, data) {
       var _this10 = this;
 
-      var commit = _ref11.commit;
+      var commit = _ref12.commit;
       return new Promise(function (resolve, reject) {
         axios__WEBPACK_IMPORTED_MODULE_0___default.a["delete"](_this10.getters.url + "api/Users/".concat(data.id)).then(function (res) {
           resolve(res);
@@ -83808,10 +84062,10 @@ __webpack_require__.r(__webpack_exports__);
         });
       });
     },
-    UpdateUser: function UpdateUser(_ref12, data) {
+    UpdateUser: function UpdateUser(_ref13, data) {
       var _this11 = this;
 
-      var commit = _ref12.commit;
+      var commit = _ref13.commit;
       return new Promise(function (resolve, reject) {
         console.log(data);
         axios__WEBPACK_IMPORTED_MODULE_0___default.a.post(_this11.getters.url + "api/users/".concat(data.id), data.data, {
@@ -83872,7 +84126,7 @@ var store = new vuex__WEBPACK_IMPORTED_MODULE_6__["default"].Store({
   },
   getters: {
     url: function url(state) {
-      return 'http://127.0.0.1:8000/';
+      return "http://" + window.location.hostname + ':8000/';
     }
   }
 });

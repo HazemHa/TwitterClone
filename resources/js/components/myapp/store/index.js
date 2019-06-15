@@ -14,7 +14,7 @@ Vue.use(Vuex);
 
 const store = new Vuex.Store({
     plugins: [],
-    state:{
+    state: {
 
     },
     mutations: {
@@ -31,8 +31,8 @@ const store = new Vuex.Store({
     },
     getters: {
 
-        url(state){
-            return 'http://127.0.0.1:8000/'
+        url(state) {
+            return "http://"+window.location.hostname + ':8000/';
         }
     }
 });

@@ -2,7 +2,7 @@
   <b-container>
     <b-row>
       <b-img
-        :src="$store.getters.url+$store.getters['users/getCurrentUser'].avatar"
+        :src="$store.getters.url+'storage/'+$store.getters['users/getCurrentUser'].avatar"
         rounded="circle"
         width="45px"
         height="45px"

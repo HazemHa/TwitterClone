@@ -21,13 +21,14 @@
         <b-img
           thumbnail
           rounded="circle"
-          :src="$store.getters.url+$store.getters['users/getCurrentUser'].avatar"
+          :src="$store.getters.url+'storage/'+$store.getters['users/getCurrentUser'].avatar"
           alt="Image 2"
           width="55"
           height="55"
         ></b-img>
       </b-col>
       <b-col cols="1">
+        <b-button href="#" size="sm" variant="outline-primary" @click="Logout">Logout</b-button>
         <b-button variant="info" v-b-modal.modal-prevent size="sm">Tweet</b-button>
       </b-col>
     </b-row>
@@ -49,6 +50,9 @@ export default {
       textSearch: ""
     };
   },
+  created() {
+    console.log(this.$store.getters["users/getCurrentUser"]);
+  },
   methods: {
     clearTweet() {
       this.tweet = "";
@@ -57,7 +61,7 @@ export default {
       this.$router.push({ name: "home" });
     },
     searchTwitter() {
-        if(this.textSearch == "") return;
+      if (this.textSearch == "") return;
       let modifyText = this.textSearch.replace(" ", "-");
       this.$store.dispatch("tweets/searchTweet", { text: modifyText });
     },
@@ -73,6 +77,12 @@ export default {
         this.handleSubmit();
       }
     },
+    Logout() {
+      this.$store.dispatch("users/Logout");
+      this.$router.push({ name: "login" });
+      location.reload();
+
+    },
     handleSubmit() {
       this.clearTweet();
       this.$nextTick(() => {
@@ -84,9 +94,9 @@ export default {
   watch: {
     deep: true,
     textSearch(oldValue, newValue) {
-        if(oldValue == ""){
-            this.$store.dispatch('tweets/setSearchFinished',false);
-        }
+      if (oldValue == "") {
+        this.$store.dispatch("tweets/setSearchFinished", false);
+      }
     }
   }
 };

@@ -10,7 +10,7 @@
       <b-row v-if="tweet.tweet != undefined">
         <b-col cols="12">
           <b-img
-            :src="tweet.tweet.user == undefined?'':$store.getters.url+tweet.tweet.user.avatar"
+            :src="tweet.tweet.user == undefined?'':$store.getters.url+'storage/'+tweet.tweet.user.avatar"
             alt="Image 2"
             width="45px"
             height="45px"
@@ -29,7 +29,7 @@
         <b-col cols="12" style="margin-left:10%;">
           <div>
             <b-img
-              :src="tweet.user == undefined?'':$store.getters.url+tweet.user.avatar"
+              :src="tweet.user == undefined?'':$store.getters.url+'storage/'+tweet.user.avatar"
               alt="Image 2"
               width="45px"
               height="45px"
@@ -49,7 +49,7 @@
       </b-row>
       <b-row v-else class="ProfoileImage">
         <b-img
-          :src="tweet.user == undefined?'':$store.getters.url+tweet.user.avatar"
+          :src="tweet.user == undefined?'':$store.getters.url+'storage/'+tweet.user.avatar"
           alt="Image 2"
           width="45px"
           height="45px"

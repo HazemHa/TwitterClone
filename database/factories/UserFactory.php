@@ -19,8 +19,8 @@ $factory->define(App\User::class, function (Faker $faker) {
         'name' => $faker->name,
         'username' => $faker->name,
         'email' => $faker->unique()->safeEmail,
-        'cover' => $faker->imageUrl($width = 640, $height = 480),
-        'avatar' => $faker->imageUrl($width = 640, $height = 480),
+        'cover' => 'defaultCover.png',
+        'avatar' => 'defaultAvatar.png',
         'password' => '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm', // secret
         'access_token' => Str::random(10),
     ];

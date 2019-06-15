@@ -6,7 +6,7 @@
       <div>
         <b-card
           :title="user.name"
-          :img-src="$store.getters.url+user.cover"
+          :img-src="$store.getters.url+'storage/'+user.cover"
           img-alt="Image"
           img-top
           tag="article"
@@ -16,7 +16,7 @@
           class="mb-2"
         >
           <b-img
-            :src="$store.getters.url+user.avatar"
+            :src="$store.getters.url+'storage/'+user.avatar"
             rounded="circle"
             width="75"
             heigth="75"

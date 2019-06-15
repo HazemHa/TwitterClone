@@ -65,13 +65,50 @@ class UsersController extends Controller
     }
     public function Logout()
     {
-        \Auth::user()->access_token = null;
-        $result = \Auth::user()->save();
+        if (\Auth::check()) {
+            \Auth::user()->access_token = null;
+            $result = \Auth::user()->save();
+        }
+        else if(\Auth::guard('api')->check()){
+            \Auth::guard('api')->user()->access_token = null;
+            $result = \Auth::guard('api')->user()->save();
+        }
         return response()->json(['message' => $result], 200);
     }
 
     public function updateProfile(Request $request)
-    { }
+    {
+        $validatedData = $request->validate([
+            'name' => 'required',
+            'username' => 'required',
+            'email' => 'required',
+            'password' => 'required'
+        ]);
+        $user = User::find($id);
+        $user->name = $request->name;
+        $user->username = $request->username;
+        $user->email = $request->email;
+        if ($request->hasFile('cover')) {
+            $nameFile = $request->file('cover')->getClientOriginalName();
+            $path = $request->cover->storeAs('public/images/cover', time() . "_" . $nameFile);
+            $path = str_replace("public", "storage", $path);
+
+            $user->cover = $path;
+        }
+        if ($request->hasFile('avatar')) {
+            $nameFile = $request->file('avatar')->getClientOriginalName();
+            $path = $request->avatar->storeAs('public/images/avatar', time() . "_" . $nameFile);
+            $path = str_replace("public", "storage", $path);
+
+            $user->avatar = $path;
+        }
+        $user->password = bcrypt($request->password);
+        $result = $user->save();
+        if ($result) {
+            return response()->json(['user' => $user, 'update' => true], 200);
+        }
+        return response()->json(['user' => null, 'update' => false], 200);
+    }
     public function store(Request $request)
     {
 
@@ -127,18 +164,21 @@ Update the specified resource in storage.**
             'email' => 'required',
             'password' => 'required'
         ]);
-        $user =User::find($id);
+        $user = User::find($id);
         $user->name = $request->name;
         $user->username = $request->username;
         $user->email = $request->email;
         if ($request->hasFile('cover')) {
             $nameFile = $request->file('cover')->getClientOriginalName();
-            $path = $request->cover->storeAs('images/cover', $timestamp . "_" . $nameFile);
+            $path = $request->cover->storeAs('public/images/cover', time() . "_" . $nameFile);
+            $path = str_replace("public", "storage", $path);
             $user->cover = $path;
         }
         if ($request->hasFile('avatar')) {
             $nameFile = $request->file('avatar')->getClientOriginalName();
-            $path = $request->avatar->storeAs('images/avatar', $timestamp . "_" . $nameFile);
+            $path = $request->avatar->storeAs('public/images/avatar', time() . "_" . $nameFile);
+            $path = str_replace("public", "storage", $path);
+
             $user->avatar = $path;
         }
         $user->password = bcrypt($request->password);
